@@ -31,14 +31,14 @@ public class ProductoDAOMemoria implements ProductoDAO {
     }
 
     @Override
-    public List<Producto> buscarPorNombre(String nombre) {
+    public Producto buscarPorNombre(String nombre) {
         List<Producto> productosEncontrados = new ArrayList<>();
         for (Producto producto : productos) {
             if (producto.getNombre().equalsIgnoreCase(nombre)) {
                 productosEncontrados.add(producto);
             }
         }
-        return productosEncontrados;
+        return (Producto) productosEncontrados;
     }
 
     @Override
