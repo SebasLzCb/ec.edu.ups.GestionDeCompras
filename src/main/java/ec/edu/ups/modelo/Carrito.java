@@ -1,3 +1,4 @@
+// src/main/java/ec/edu/ups/modelo/Carrito.java
 package ec.edu.ups.modelo;
 
 import java.util.ArrayList;
@@ -5,50 +6,43 @@ import java.util.List;
 
 public class Carrito {
     private int codigo;
-    private List<ItemCarrito> items = new ArrayList<>();
+    private Usuario usuario;
+    private final List<ItemCarrito> items = new ArrayList<>();
+    private static final double IVA_RATE = 0.12;
 
-    public Carrito() {}
-
-    public Carrito(int codigo) {
-        this.codigo = codigo;
+    public Carrito(int codigo, Usuario usuario) {
+        this.codigo  = codigo;
+        this.usuario = usuario;
     }
 
-    public int getCodigo() {
-        return codigo;
-    }
-    public void setCodigo(int codigo) {
-        this.codigo = codigo;
+    public int getCodigo() { return codigo; }
+    public Usuario getUsuario() { return usuario; }
+
+    public void agregarProducto(Producto p, int cantidad) {
+        for (ItemCarrito it : items) {
+            if (it.getProducto().getCodigo() == p.getCodigo()) {
+                it.setCantidad(it.getCantidad() + cantidad);
+                return;
+            }
+        }
+        items.add(new ItemCarrito(p, cantidad));
     }
 
-    public List<ItemCarrito> getItems() {
+    public List<ItemCarrito> obtenerItems() {
         return items;
     }
-    public void setItems(List<ItemCarrito> items) {
-        this.items = items;
-    }
 
-    public void agregarItem(ItemCarrito item) {
-        this.items.add(item);
-    }
-
-    public double getSubtotal() {
+    public double calcularSubtotal() {
         return items.stream()
                 .mapToDouble(ItemCarrito::getSubtotal)
                 .sum();
     }
 
-    public double getIva() {
-        return getSubtotal() * 0.12;
+    public double calcularIVA() {
+        return calcularSubtotal() * IVA_RATE;
     }
 
-    public double getTotal() {
-        return getSubtotal() + getIva();
-    }
-
-    @Override
-    public String toString() {
-        return "Carrito #" + codigo
-                + " (items=" + items.size()
-                + ", subtotal=" + getSubtotal() + ")";
+    public double calcularTotal() {
+        return calcularSubtotal() + calcularIVA();
     }
 }

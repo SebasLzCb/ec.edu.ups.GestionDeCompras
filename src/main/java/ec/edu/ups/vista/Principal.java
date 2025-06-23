@@ -1,76 +1,57 @@
+// src/main/java/ec/edu/ups/vista/Principal.java
 package ec.edu.ups.vista;
 
 import javax.swing.*;
 
 public class Principal extends JInternalFrame {
-    private JMenuBar menuBar;
-    private JMenu menuProducto;
-    private JMenu menuCarrito;
-    private JMenuItem menuItemCrearProducto;
-    private JMenuItem menuItemEliminarProducto;
-    private JMenuItem menuItemActualizarProducto;
-    private JMenuItem menuItemBuscarProducto;
-    private JMenuItem menuItemCrearCarrito;
-    private JDesktopPane desktopPane;
+    private final JMenuItem miCrearProducto;
+    private final JMenuItem miEliminarProducto;
+    private final JMenuItem miActualizarProducto;
+    private final JMenuItem miBuscarProducto;
+    private final JMenuItem miCarrito;
+    private final JMenuItem miUsuarios;
+    private final JMenuItem miLogout;
 
     public Principal() {
-        super("Sistema de Carrito de Compras En línea",
-                true,   // resizable
-                true,   // closable
-                true,   // maximizable
-                true);  // iconifiable
+        super("Sistema de Compras", true, true, true, true);
 
-        menuBar = new JMenuBar();
+        JMenuBar mb = new JMenuBar();
 
-        // Menú Producto
-        menuProducto = new JMenu("Producto");
-        menuItemCrearProducto     = new JMenuItem("Crear Producto");
-        menuItemEliminarProducto  = new JMenuItem("Eliminar Producto");
-        menuItemActualizarProducto= new JMenuItem("Actualizar Producto");
-        menuItemBuscarProducto    = new JMenuItem("Buscar Producto");
-        menuProducto.add(menuItemCrearProducto);
-        menuProducto.add(menuItemEliminarProducto);
-        menuProducto.add(menuItemActualizarProducto);
-        menuProducto.add(menuItemBuscarProducto);
-        menuBar.add(menuProducto);
+        JMenu mProd = new JMenu("Producto");
+        miCrearProducto      = new JMenuItem("Crear");
+        miEliminarProducto   = new JMenuItem("Eliminar");
+        miActualizarProducto = new JMenuItem("Actualizar");
+        miBuscarProducto     = new JMenuItem("Buscar");
+        mProd.add(miCrearProducto);
+        mProd.add(miEliminarProducto);
+        mProd.add(miActualizarProducto);
+        mProd.add(miBuscarProducto);
+        mb.add(mProd);
 
-        // Menú Crear Carrito
-        menuCarrito = new JMenu("Crear Carrito");
-        menuItemCrearCarrito = new JMenuItem("Añadir Carrito");
-        menuCarrito.add(menuItemCrearCarrito);
-        menuBar.add(menuCarrito);
+        JMenu mCar = new JMenu("Carrito");
+        miCarrito = new JMenuItem("Añadir al Carrito");
+        mCar.add(miCarrito);
+        mb.add(mCar);
 
-        // Desktop Pane
-        desktopPane = new JDesktopPane();
+        JMenu mUser = new JMenu("Usuarios");
+        miUsuarios = new JMenuItem("Gestionar Usuarios");
+        miLogout   = new JMenuItem("Cerrar Sesión");
+        mUser.add(miUsuarios);
+        mUser.addSeparator();
+        mUser.add(miLogout);
+        mb.add(mUser);
 
-        getRootPane().setJMenuBar(menuBar);
-        setContentPane(desktopPane);
-        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setJMenuBar(mb);
+        setContentPane(new JDesktopPane());
         setSize(800, 600);
     }
 
-    public JMenuItem getMenuItemCrearProducto() {
-        return menuItemCrearProducto;
-    }
-
-    public JMenuItem getMenuItemEliminarProducto() {
-        return menuItemEliminarProducto;
-    }
-
-    public JMenuItem getMenuItemActualizarProducto() {
-        return menuItemActualizarProducto;
-    }
-
-    public JMenuItem getMenuItemBuscarProducto() {
-        return menuItemBuscarProducto;
-    }
-
-    public JMenuItem getMenuItemCarrito() {
-        return menuItemCrearCarrito;
-    }
-
-    public JDesktopPane getDesktopPane() {
-        return desktopPane;
-    }
+    public JMenuItem getMiCrearProducto()     { return miCrearProducto; }
+    public JMenuItem getMiEliminarProducto()  { return miEliminarProducto; }
+    public JMenuItem getMiActualizarProducto(){ return miActualizarProducto; }
+    public JMenuItem getMiBuscarProducto()    { return miBuscarProducto; }
+    public JMenuItem getMiCarrito()           { return miCarrito; }
+    public JMenuItem getMiUsuarios()          { return miUsuarios; }
+    public JMenuItem getMiLogout()            { return miLogout; }
+    public JDesktopPane getDesktop()          { return (JDesktopPane)getContentPane(); }
 }
-

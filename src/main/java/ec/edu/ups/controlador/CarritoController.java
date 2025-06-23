@@ -1,29 +1,40 @@
+// src/main/java/ec/edu/ups/controlador/CarritoController.java
 package ec.edu.ups.controlador;
 
+import ec.edu.ups.dao.CarritoDAO;
+import ec.edu.ups.dao.ProductoDAO;
+import ec.edu.ups.modelo.Carrito;
+import ec.edu.ups.modelo.ItemCarrito;
 import ec.edu.ups.modelo.Producto;
-import ec.edu.ups.vista.CarritoAñadirView;
+import ec.edu.ups.modelo.Usuario;
+import ec.edu.ups.vista.Carrito.CarritoAñadirView;
 
-import javax.swing.*;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
-import java.util.ArrayList;
-import java.util.List;
 
 public class CarritoController {
 
     private final CarritoAñadirView view;
-    private final ProductoController prodCtrl;
-    private final List<ItemCarrito> carritoItems = new ArrayList<>();
+    private final ProductoDAO productoDAO;
+    private final CarritoDAO carritoDAO;
+    private final Carrito carrito;
 
-    public CarritoController(CarritoAñadirView view, ProductoController prodCtrl) {
-        this.view = view;
-        this.prodCtrl = prodCtrl;
+    public CarritoController(CarritoAñadirView view,
+                             ProductoDAO productoDAO,
+                             CarritoDAO carritoDAO,
+                             Usuario usuarioActual) {
+        this.view        = view;
+        this.productoDAO = productoDAO;
+        this.carritoDAO  = carritoDAO;
+        this.carrito     = new Carrito(1, usuarioActual);
+
         configurarListeners();
-        actualizarTotales();
+        cargarTabla();
     }
 
     private void configurarListeners() {
         view.getBtnBuscar().addActionListener(e -> buscarProducto());
-        view.getBtnAñadir().addActionListener(e -> añadirAlCarrito());
+        view.getBtnAñadir().addActionListener(e -> anadirProducto());
         view.getBtnLimpiar().addActionListener(e -> limpiarCampos());
         view.getBtnGuardar().addActionListener(e -> guardarCarrito());
     }
@@ -31,7 +42,7 @@ public class CarritoController {
     private void buscarProducto() {
         try {
             int codigo = Integer.parseInt(view.getTxtCodigo().getText().trim());
-            Producto p = prodCtrl.buscarPorCodigo(codigo);
+            Producto p = productoDAO.buscarPorCodigo(codigo);
             if (p != null) {
                 view.getTxtNombre().setText(p.getNombre());
                 view.getTxtPrecio().setText(String.valueOf(p.getPrecio()));
@@ -43,74 +54,66 @@ public class CarritoController {
         }
     }
 
-    private void añadirAlCarrito() {
+    private void anadirProducto() {
         try {
-            int codigo   = Integer.parseInt(view.getTxtCodigo().getText().trim());
-            Producto p   = prodCtrl.buscarPorCodigo(codigo);
-            int cantidad = Integer.parseInt(view.getTxtCantidad().getText().trim());
-            if (p == null) {
-                JOptionPane.showMessageDialog(view, "Busca un producto válido primero");
+            int codigo = Integer.parseInt(view.getTxtCodigo().getText().trim());
+            Producto producto = productoDAO.buscarPorCodigo(codigo);
+            if (producto == null) {
+                JOptionPane.showMessageDialog(view, "Busca primero un producto válido");
                 return;
             }
-            if (cantidad <= 0) throw new NumberFormatException();
-
-            DefaultTableModel m = view.getTableModel();
-            m.addRow(new Object[]{p.getCodigo(), p.getNombre(), p.getPrecio(), cantidad});
-            carritoItems.add(new ItemCarrito(p.getCodigo(), p.getNombre(), p.getPrecio(), cantidad));
-            actualizarTotales();
+            int cantidad = Integer.parseInt(
+                    view.getCbxCantidad()
+                            .getSelectedItem()
+                            .toString()
+            );
+            carrito.agregarProducto(producto, cantidad);
+            cargarTabla();
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(view, "Cantidad inválida");
         }
+    }
+
+    private void cargarTabla() {
+        DefaultTableModel m = (DefaultTableModel)view.getTableCarrito().getModel();
+        m.setRowCount(0);
+        for (ItemCarrito it : carrito.obtenerItems()) {
+            m.addRow(new Object[]{
+                    it.getProducto().getCodigo(),
+                    it.getProducto().getNombre(),
+                    it.getCantidad(),
+                    it.getSubtotal()
+            });
+        }
+        mostrarTotales();
+    }
+
+    private void mostrarTotales() {
+        view.getTxtSubtotal().setText(String.format("%.2f", carrito.calcularSubtotal()));
+        view.getTxtIva().setText    (String.format("%.2f", carrito.calcularIVA()));
+        view.getTxtTotal().setText  (String.format("%.2f", carrito.calcularTotal()));
     }
 
     private void limpiarCampos() {
         view.getTxtCodigo().setText("");
         view.getTxtNombre().setText("");
         view.getTxtPrecio().setText("");
-        view.getTxtCantidad().setText("");
-        actualizarTotales();
+        view.getCbxCantidad().setSelectedIndex(0);
+        cargarTabla();
     }
 
     private void guardarCarrito() {
-        if (carritoItems.isEmpty()) {
+        if (carrito.obtenerItems().isEmpty()) {
             JOptionPane.showMessageDialog(view, "El carrito está vacío");
             return;
         }
-        StringBuilder sb = new StringBuilder();
-        carritoItems.forEach(it -> sb.append(it.cantidad)
-                .append("× ")
-                .append(it.nombre)
-                .append("\n"));
-        JOptionPane.showMessageDialog(view,
-                "Guardados " + carritoItems.size() + " ítems en el carrito:\n" + sb.toString()
+        carritoDAO.crear(carrito);
+        JOptionPane.showMessageDialog(
+                view,
+                "Guardados " + carrito.obtenerItems().size() + " ítems en el carrito"
         );
-        view.getTableModel().setRowCount(0);
-        carritoItems.clear();
-        actualizarTotales();
-    }
-
-    private void actualizarTotales() {
-        double subtotal = 0;
-        DefaultTableModel m = view.getTableModel();
-        for (int i = 0; i < m.getRowCount(); i++) {
-            double precio = Double.parseDouble(m.getValueAt(i, 2).toString());
-            int cantidad  = Integer.parseInt(m.getValueAt(i, 3).toString());
-            subtotal     += precio * cantidad;
-        }
-        double iva   = subtotal * 0.12;
-        double total = subtotal + iva;
-        view.getTxtSubtotal().setText(String.format("%.2f", subtotal));
-        view.getTxtIva().setText(String.format("%.2f", iva));
-        view.getTxtTotal().setText(String.format("%.2f", total));
-    }
-
-    private static class ItemCarrito {
-        final int codigo;
-        final String nombre;
-        final double precio;
-        final int cantidad;
-        ItemCarrito(int c, String n, double p, int q) {
-            codigo = c; nombre = n; precio = p; cantidad = q;
-        }
+        carrito.obtenerItems().clear();
+        cargarTabla();
     }
 }
+

@@ -1,6 +1,4 @@
-package ec.edu.ups.vista;
-
-import ec.edu.ups.modelo.Producto;
+package ec.edu.ups.vista.Carrito;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -12,7 +10,6 @@ public class CarritoAñadirView extends JInternalFrame {
     private JButton btnBuscar;
     private JTextField txtNombre;
     private JTextField txtPrecio;
-    private JTextField txtCantidad;
     private JButton btnAñadir;
     private JTable tableCarrito;
     private DefaultTableModel tableModel;
@@ -21,6 +18,7 @@ public class CarritoAñadirView extends JInternalFrame {
     private JTextField txtSubtotal;
     private JTextField txtIva;
     private JTextField txtTotal;
+    private JComboBox<String> comboBox1;   // <-- aquí va el combo en vez del textfield
 
     public CarritoAñadirView() {
         super("Añadir al Carrito", true, true, true, true);
@@ -36,14 +34,12 @@ public class CarritoAñadirView extends JInternalFrame {
         gbc.insets = new Insets(5,5,5,5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Título
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 3;
         JLabel lblTitulo = new JLabel("Datos del Producto");
         lblTitulo.setFont(lblTitulo.getFont().deriveFont(Font.BOLD, 16f));
         panelPrincipal.add(lblTitulo, gbc);
         gbc.gridwidth = 1;
 
-        // Código + Buscar
         gbc.gridy = 1; gbc.gridx = 0;
         panelPrincipal.add(new JLabel("Código:"), gbc);
         txtCodigo = new JTextField(10);
@@ -53,7 +49,6 @@ public class CarritoAñadirView extends JInternalFrame {
         gbc.gridx = 2;
         panelPrincipal.add(btnBuscar, gbc);
 
-        // Nombre
         gbc.gridy = 2; gbc.gridx = 0;
         panelPrincipal.add(new JLabel("Nombre:"), gbc);
         txtNombre = new JTextField(20);
@@ -62,7 +57,6 @@ public class CarritoAñadirView extends JInternalFrame {
         panelPrincipal.add(txtNombre, gbc);
         gbc.gridwidth = 1;
 
-        // Precio
         gbc.gridy = 3; gbc.gridx = 0;
         panelPrincipal.add(new JLabel("Precio:"), gbc);
         txtPrecio = new JTextField(10);
@@ -71,17 +65,20 @@ public class CarritoAñadirView extends JInternalFrame {
         panelPrincipal.add(txtPrecio, gbc);
         gbc.gridwidth = 1;
 
-        // Cantidad + Añadir
         gbc.gridy = 4; gbc.gridx = 0;
         panelPrincipal.add(new JLabel("Cantidad:"), gbc);
-        txtCantidad = new JTextField(5);
+        // crea el combo con valores 1–20
+        String[] cantidades = new String[20];
+        for (int i = 0; i < 20; i++) {
+            cantidades[i] = String.valueOf(i + 1);
+        }
+        comboBox1 = new JComboBox<>(cantidades);
         gbc.gridx = 1;
-        panelPrincipal.add(txtCantidad, gbc);
+        panelPrincipal.add(comboBox1, gbc);
         btnAñadir = new JButton("Añadir");
         gbc.gridx = 2;
         panelPrincipal.add(btnAñadir, gbc);
 
-        // Tabla carrito
         tableModel = new DefaultTableModel(new Object[]{"Código","Nombre","Precio","Cantidad"}, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -92,7 +89,6 @@ public class CarritoAñadirView extends JInternalFrame {
         panelPrincipal.add(new JScrollPane(tableCarrito), gbc);
         gbc.weightx = 0; gbc.weighty = 0; gbc.fill = GridBagConstraints.HORIZONTAL; gbc.gridwidth = 1;
 
-        // Botones inferior
         gbc.gridy = 6; gbc.gridx = 1;
         btnGuardar = new JButton("Guardar");
         panelPrincipal.add(btnGuardar, gbc);
@@ -100,7 +96,6 @@ public class CarritoAñadirView extends JInternalFrame {
         gbc.gridx = 2;
         panelPrincipal.add(btnLimpiar, gbc);
 
-        // Subtotal, IVA y Total
         gbc.gridy = 7; gbc.gridx = 0;
         panelPrincipal.add(new JLabel("Subtotal:"), gbc);
         txtSubtotal = new JTextField(10);
@@ -126,17 +121,18 @@ public class CarritoAñadirView extends JInternalFrame {
         gbc.gridwidth = 1;
     }
 
-    public JTextField getTxtCodigo()       { return txtCodigo; }
-    public JButton    getBtnBuscar()       { return btnBuscar; }
-    public JTextField getTxtNombre()       { return txtNombre; }
-    public JTextField getTxtPrecio()       { return txtPrecio; }
-    public JTextField getTxtCantidad()     { return txtCantidad; }
-    public JButton    getBtnAñadir()       { return btnAñadir; }
-    public JTable     getTableCarrito()    { return tableCarrito; }
+
+    public JTextField getTxtCodigo()         { return txtCodigo; }
+    public JButton    getBtnBuscar()         { return btnBuscar; }
+    public JTextField getTxtNombre()         { return txtNombre; }
+    public JTextField getTxtPrecio()         { return txtPrecio; }
+    public JButton    getBtnAñadir()         { return btnAñadir; }
+    public JTable     getTableCarrito()      { return tableCarrito; }
     public DefaultTableModel getTableModel(){ return tableModel; }
-    public JButton    getBtnGuardar()      { return btnGuardar; }
-    public JButton    getBtnLimpiar()      { return btnLimpiar; }
-    public JTextField getTxtSubtotal()     { return txtSubtotal; }
-    public JTextField getTxtIva()          { return txtIva; }
-    public JTextField getTxtTotal()        { return txtTotal; }
+    public JButton    getBtnGuardar()        { return btnGuardar; }
+    public JButton    getBtnLimpiar()        { return btnLimpiar; }
+    public JTextField getTxtSubtotal()       { return txtSubtotal; }
+    public JTextField getTxtIva()            { return txtIva; }
+    public JTextField getTxtTotal()          { return txtTotal; }
+    public JComboBox<String> getCbxCantidad(){ return comboBox1; }
 }

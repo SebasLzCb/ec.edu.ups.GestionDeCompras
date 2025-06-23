@@ -2,7 +2,11 @@ package ec.edu.ups.controlador;
 
 import ec.edu.ups.dao.ProductoDAO;
 import ec.edu.ups.modelo.Producto;
-import ec.edu.ups.vista.*;
+import ec.edu.ups.vista.Carrito.CarritoAñadirView;
+import ec.edu.ups.vista.Producto.ProductoElimView;
+import ec.edu.ups.vista.Producto.ProductoListaView;
+import ec.edu.ups.vista.Producto.ProductoModView;
+import ec.edu.ups.vista.Producto.ProductoView;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -160,6 +164,7 @@ public class ProductoController {
 
     public void setCarritoView(CarritoAñadirView view) {
         this.carritoView = view;
+
         view.getBtnBuscar().addActionListener(e -> {
             try {
                 int c = Integer.parseInt(view.getTxtCodigo().getText());
@@ -170,20 +175,34 @@ public class ProductoController {
                 }
             } catch (NumberFormatException ex) { /*ignore*/ }
         });
+
         view.getBtnAñadir().addActionListener(e -> {
-            Producto p = buscarPorCodigo(Integer.parseInt(view.getTxtCodigo().getText()));
-            int cantidad = Integer.parseInt(view.getTxtCantidad().getText());
-            if (p != null) mostrarProductoEnCarrito(p, cantidad);
+            try {
+                Producto p = buscarPorCodigo(Integer.parseInt(view.getTxtCodigo().getText()));
+                // **aquí** sacas la cantidad del combo
+                int cantidad = Integer.parseInt(
+                        view.getCbxCantidad()
+                                .getSelectedItem()
+                                .toString()
+                );
+                if (p != null) {
+                    mostrarProductoEnCarrito(p, cantidad);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(view, "Cantidad inválida");
+            }
         });
+
         view.getBtnLimpiar().addActionListener(e -> {
             view.getTxtCodigo().setText("");
             view.getTxtNombre().setText("");
             view.getTxtPrecio().setText("");
-            view.getTxtCantidad().setText("");
+            view.getCbxCantidad().setSelectedIndex(0);
         });
-        view.getBtnGuardar().addActionListener(e -> {
-            JOptionPane.showMessageDialog(view, "Elementos guardados en el carrito.");
-        });
+
+        view.getBtnGuardar().addActionListener(e ->
+                JOptionPane.showMessageDialog(view, "Elementos guardados en el carrito.")
+        );
     }
 
     private void refrescarTodo() {
