@@ -4,117 +4,176 @@ import ec.edu.ups.dao.UsuarioDAO;
 import ec.edu.ups.modelo.Rol;
 import ec.edu.ups.modelo.Usuario;
 import ec.edu.ups.vista.LoginView;
+import ec.edu.ups.vista.Principal;
 import ec.edu.ups.vista.Usuario.UsuarioElimView;
 import ec.edu.ups.vista.Usuario.UsuarioListaView;
 import ec.edu.ups.vista.Usuario.UsuarioModView;
 import ec.edu.ups.vista.Usuario.UsuarioRegistroView;
 
-import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.util.List;
 
 public class UsuarioController {
 
+    private Usuario usuarioActual;
     private final UsuarioDAO usuarioDAO;
     private final LoginView loginView;
     private final UsuarioListaView listaView;
     private final UsuarioRegistroView registroView;
     private final UsuarioModView modView;
     private final UsuarioElimView elimView;
-
-    private Usuario usuarioActual;
+    private final Principal principal;
 
     public UsuarioController(LoginView loginView,
                              UsuarioDAO usuarioDAO,
                              UsuarioListaView listaView,
                              UsuarioRegistroView registroView,
                              UsuarioModView modView,
-                             UsuarioElimView elimView) {
-        this.loginView    = loginView;
-        this.usuarioDAO   = usuarioDAO;
-        this.listaView    = listaView;
-        this.registroView = registroView;
-        this.modView      = modView;
-        this.elimView     = elimView;
+                             UsuarioElimView elimView,
+                             Principal principal) {
 
-        configurarLogin();
-        configurarCrudUsuario();
+        this.loginView = loginView;
+        this.usuarioDAO = usuarioDAO;
+        this.listaView = listaView;
+        this.registroView = registroView;
+        this.modView = modView;
+        this.elimView = elimView;
+        this.principal = principal;
+
+        configurarEventos();
     }
 
-    private void configurarLogin() {
-        loginView.getBtnLogin().addActionListener(e -> {
-            String u = loginView.getUsuario();
-            String p = loginView.getPassword();
-            try {
-                // suponemos que autenticar devuelve el Usuario:
-                usuarioActual = usuarioDAO.autenticar(u, p);
+    private void configurarEventos() {
+        // LOGIN
+        loginView.getBtnIniciarSesion().addActionListener(e -> {
+            String username = loginView.getTxtUsername().getText().trim();
+            String password = loginView.getTxtContrasenia().getText().trim();
+            usuarioActual = usuarioDAO.autenticar(username, password);
+
+            if (usuarioActual == null) {
+                loginView.mostrarMensaje("Usuario o contraseña incorrectos.");
+            } else {
                 loginView.dispose();
-            } catch (RuntimeException ex) {
-                loginView.mostrarMensaje("Credenciales inválidas");
+                principal.setVisible(true);
+
+                if (usuarioActual.getRol() == Rol.USUARIO) {
+                    principal.deshabilitarMenusAdministrador();
+                }
             }
         });
-        loginView.getBtnRegistrar().addActionListener(e -> {
+
+        loginView.getBtnRegistrar().addActionListener(e -> registroView.setVisible(true));
+
+        // REGISTRO
+        registroView.getBtnCrear().addActionListener(e -> {
+            String usuario = registroView.getTxtUsuario().getText().trim();
+            String contra = new String(registroView.getTxtPassword().getPassword()).trim();
+            Rol rol = Rol.USUARIO;
+
+            if (usuario.isEmpty() || contra.isEmpty()) {
+                registroView.mostrarMensaje("No puede dejar campos vacíos.");
+                return;
+            }
+
+            usuarioDAO.crear(new Usuario(usuario, contra, rol));
+            registroView.setVisible(false);
+            refrescarTabla();
+        });
+
+        // MODIFICACIÓN
+        modView.getBtnActualizar().addActionListener(e -> {
+            String nombre = modView.getTxtUsername().getText().trim();
+            String nuevaContra = new String(modView.getTxtPassword().getPassword()).trim();
+
+            if (modView.getCbxRol().getSelectedItem() == null) {
+                modView.mostrarMensaje("Seleccione un rol.");
+                return;
+            }
+
+            Rol nuevoRol = Rol.valueOf(modView.getCbxRol().getSelectedItem().toString());
+
+            usuarioDAO.actualizar(new Usuario(nombre, nuevaContra, nuevoRol));
+            refrescarTabla();
+            modView.limpiarCampos();
+        });
+
+        // ELIMINACIÓN
+        elimView.getBtnEliminar().addActionListener(e -> {
+            int fila = elimView.getTableUsuarios().getSelectedRow();
+            if (fila >= 0) {
+                String nombre = elimView.getTableModel().getValueAt(fila, 0).toString();
+                usuarioDAO.eliminar(nombre);
+                refrescarTabla();
+            } else {
+                elimView.mostrarMensaje("Seleccione un usuario.");
+            }
+        });
+
+        // BÚSQUEDA EN LISTA
+        listaView.getBtnBuscar().addActionListener(e -> {
+            String texto = listaView.getTxtBuscar().getText().trim().toLowerCase();
+            String filtro = listaView.getComboFiltro().getSelectedItem().toString();
+            DefaultTableModel model = listaView.getTableModel();
+            model.setRowCount(0);
+            for (Usuario u : usuarioDAO.listarTodos()) {
+                if ((filtro.equalsIgnoreCase("Username") && u.getUsername().toLowerCase().contains(texto)) ||
+                        (filtro.equalsIgnoreCase("Rol") && u.getRol().toString().toLowerCase().contains(texto))) {
+                    model.addRow(new Object[]{u.getUsername(), u.getRol()});
+                }
+            }
+        });
+
+        listaView.getBtnRefrescar().addActionListener(e -> refrescarTabla());
+
+        // MENÚ PRINCIPAL → ACCIONES
+        principal.getMenuItemRegistrarUsuario().addActionListener(e -> {
+            if (!registroView.isVisible()) {
+                principal.getDesktopPane().add(registroView);
+            }
             registroView.setVisible(true);
         });
-    }
 
-    private void configurarCrudUsuario() {
-        // CREAR
-        registroView.getBtnCrear().addActionListener(e -> {
-            String u = registroView.getTxtUsuario().getText().trim();
-            String p = new String(registroView.getTxtPassword().getPassword());
-            usuarioDAO.crear(new Usuario(u, p, Rol.Cliente));
-            registroView.dispose();
+        principal.getMenuItemListarUsuarios().addActionListener(e -> {
             refrescarTabla();
-        });
-
-        // LISTAR
-        listaView.getBtnRefrescar().addActionListener(e -> refrescarTabla());
-        listaView.getBtnBuscar().addActionListener(e -> {
-            String criterio = listaView.getComboFiltro().getSelectedItem().toString();
-            String texto    = listaView.getTxtBuscar().getText().trim();
-            if ("Usuario".equals(criterio)) {
-                Usuario uObj = usuarioDAO.buscarPorUsername(texto);
-                fillTable(uObj == null ? List.of() : List.of(uObj));
-            } else {
-                refrescarTabla();
+            if (!listaView.isVisible()) {
+                principal.getDesktopPane().add(listaView);
             }
+            listaView.setVisible(true);
         });
 
-        // MODIFICAR
-        modView.getBtnActualizar().addActionListener(e -> {
-            int row = modView.getTableUsuarios().getSelectedRow();
-            if (row < 0) return;
-            String u        = (String) modView.getTableModel().getValueAt(row, 0);
-            Usuario orig    = usuarioDAO.buscarPorUsername(u);
-            String nuevaPwd = new String(modView.getTxtPassword().getPassword());
-            Rol    nuevoRol = (Rol) modView.getCbxRol().getSelectedItem();
-            orig.setContraseña(nuevaPwd);
-            orig.setRol(nuevoRol);
-            usuarioDAO.actualizar(orig);
+        principal.getMenuItemModificarUsuario().addActionListener(e -> {
             refrescarTabla();
+            if (!modView.isVisible()) {
+                principal.getDesktopPane().add(modView);
+            }
+            modView.setVisible(true);
         });
 
-        // ELIMINAR
-        elimView.getBtnEliminar().addActionListener(e -> {
-            int row = elimView.getTableUsuarios().getSelectedRow();
-            if (row < 0) return;
-            String u = (String) elimView.getTableModel().getValueAt(row, 0);
-            usuarioDAO.eliminar(u);
+        principal.getMenuItemEliminarUsuario().addActionListener(e -> {
             refrescarTabla();
+            if (!elimView.isVisible()) {
+                principal.getDesktopPane().add(elimView);
+            }
+            elimView.setVisible(true);
+        });
+
+        principal.getMenuItemCerrarSesion().addActionListener(e -> {
+            principal.setVisible(false);
+            loginView.limpiarCampos();
+            loginView.setVisible(true);
         });
     }
 
-    private void fillTable(List<Usuario> usuarios) {
-        DefaultTableModel m = listaView.getTableModel();
-        m.setRowCount(0);
-        for (Usuario u : usuarios) {
-            m.addRow(new Object[]{ u.getNombreDeUsuario(), u.getRol() });
+    private void refrescarTabla() {
+        DefaultTableModel model = listaView.getTableModel();
+        model.setRowCount(0);
+        for (Usuario u : usuarioDAO.listarTodos()) {
+            model.addRow(new Object[]{u.getUsername(), u.getRol()});
         }
-    }
 
-    public void refrescarTabla() {
-        fillTable(usuarioDAO.listarTodos());
+        elimView.getTableModel().setRowCount(0);
+        for (Usuario u : usuarioDAO.listarTodos()) {
+            elimView.getTableModel().addRow(new Object[]{u.getUsername(), u.getRol()});
+        }
     }
 
     public Usuario getUsuarioActual() {

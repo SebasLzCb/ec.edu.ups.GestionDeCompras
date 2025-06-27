@@ -1,4 +1,3 @@
-// src/main/java/ec/edu/ups/vista/Main.java
 package ec.edu.ups.vista;
 
 import ec.edu.ups.controlador.CarritoController;
@@ -12,108 +11,135 @@ import ec.edu.ups.dao.impl.ProductoDAOMemoria;
 import ec.edu.ups.dao.impl.UsuarioDAOMemoria;
 import ec.edu.ups.modelo.Rol;
 import ec.edu.ups.modelo.Usuario;
-import ec.edu.ups.vista.Carrito.CarritoAñadirView;
-import ec.edu.ups.vista.Producto.*;
 import ec.edu.ups.vista.Usuario.*;
+import ec.edu.ups.vista.Producto.*;
+import ec.edu.ups.vista.Carrito.*;
 
-import javax.swing.*;
-import java.beans.PropertyVetoException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 public class Main {
     public static void main(String[] args) {
-        // arrancamos el login directamente:
-        UsuarioDAO usuarioDAO     = new UsuarioDAOMemoria();
-        LoginView loginView       = new LoginView();
-        UsuarioListaView listaV   = new UsuarioListaView();
-        UsuarioRegistroView regV  = new UsuarioRegistroView();
-        UsuarioModView modV       = new UsuarioModView();
-        UsuarioElimView elimV     = new UsuarioElimView();
+        java.awt.EventQueue.invokeLater(() -> {
+            UsuarioDAO usuarioDAO = new UsuarioDAOMemoria();
 
-        // 1) control de login + CRUD usuario
-        UsuarioController usrCtrl = new UsuarioController(
-                loginView,
-                usuarioDAO,
-                listaV, regV, modV, elimV
-        );
+            // Vistas de login y usuario
+            LoginView loginView = new LoginView();
+            UsuarioListaView listaUsuarios = new UsuarioListaView();
+            UsuarioRegistroView registroView = new UsuarioRegistroView();
+            UsuarioModView modView = new UsuarioModView();
+            UsuarioElimView elimView = new UsuarioElimView();
+            Principal principal = new Principal(); // Se mueve aquí
 
-        // 2) mostramos el login y esperamos a que se cierre
-        loginView.setVisible(true);
-        while (loginView.isVisible()) {
-            try { Thread.sleep(50); } catch (InterruptedException ignored) {}
-        }
+            // Controlador de usuarios con el principal
+            UsuarioController usuarioController = new UsuarioController(
+                    loginView, usuarioDAO, listaUsuarios, registroView, modView, elimView, principal
+            );
 
-        // 3) tras login cerrado, recuperamos el usuario autenticado
-        Usuario actual = usrCtrl.getUsuarioActual();
-        if (actual == null) {
-            // si canceló o credenciales fallaron, salimos
-            System.exit(0);
-        }
+            loginView.setVisible(true);
 
-        // 4) DAO y vistas de Producto y Carrito
-        ProductoDAO prodDAO     = new ProductoDAOMemoria();
-        CarritoDAO  cartDAO     = new CarritoDAOMemoria();
+            loginView.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    Usuario actual = usuarioController.getUsuarioActual();
 
-        ProductoView        altaP    = new ProductoView();
-        ProductoListaView   listaP   = new ProductoListaView();
-        ProductoModView     modP     = new ProductoModView();
-        ProductoElimView    elimP    = new ProductoElimView(prodDAO);
-        CarritoAñadirView   cartAdd  = new CarritoAñadirView();
+                    if (actual == null) {
+                        System.exit(0);
+                    }
 
-        // 5) controladores de Producto y Carrito
-        ProductoController prodCtrl = new ProductoController(altaP, prodDAO, listaP);
-        prodCtrl.setProductoMod(modP);
-        prodCtrl.setProductoElimView(elimP);
-        prodCtrl.setCarritoView(cartAdd);
+                    ProductoDAO productoDAO = new ProductoDAOMemoria();
+                    CarritoDAO carritoDAO = new CarritoDAOMemoria();
 
-        new CarritoController(cartAdd, prodDAO, cartDAO, actual);
+                    ProductoAñadirView productoAnadirView = new ProductoAñadirView();
+                    ProductoListaView productoListaView = new ProductoListaView();
+                    ProductoModView productoModView = new ProductoModView();
+                    ProductoElimView productoElimView = new ProductoElimView(productoDAO);
 
-        // 6) Ventana principal con JInternalFrames
-        Principal principal = new Principal();
-        try { principal.setMaximum(true); } catch (PropertyVetoException ignore){}
+                    CarritoAñadirView carritoAnadirView = new CarritoAñadirView();
+                    CarritoListaView carritoListaView = new CarritoListaView();
+                    CarritoModView carritoModView = new CarritoModView();
 
-        JDesktopPane desktop = principal.getDesktop();
-        JFrame frame = new JFrame("Sistema de Carrito de Compras");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-        frame.setContentPane(desktop);
-        frame.setJMenuBar(principal.getJMenuBar());
-        frame.setVisible(true);
+                    principal.setVisible(true);
 
-        // 7) Enlazamos menú PRODUCTO
-        principal.getMiCrearProducto().addActionListener(e -> {
-            if (!altaP.isVisible()) desktop.add(altaP);
-            altaP.setVisible(true);
-        });
-        principal.getMiBuscarProducto().addActionListener(e -> {
-            if (!listaP.isVisible()) desktop.add(listaP);
-            listaP.setVisible(true);
-        });
-        principal.getMiActualizarProducto().addActionListener(e -> {
-            if (!modP.isVisible()) desktop.add(modP);
-            modP.setVisible(true);
-        });
-        principal.getMiEliminarProducto().addActionListener(e -> {
-            if (!elimP.isVisible()) desktop.add(elimP);
-            elimP.setVisible(true);
-        });
+                    ProductoController productoController = new ProductoController(
+                            productoDAO,
+                            productoAnadirView,
+                            productoListaView,
+                            carritoAnadirView
+                    );
+                    productoController.setProductoMod(productoModView);
+                    productoController.setProductoElimView(productoElimView);
 
-        // 8) Enlazamos menú CARRITO
-        principal.getMiCarrito().addActionListener(e -> {
-            if (!cartAdd.isVisible()) desktop.add(cartAdd);
-            cartAdd.setVisible(true);
-        });
+                    new CarritoController(carritoDAO, productoDAO, carritoAnadirView, carritoListaView, carritoModView, actual);
 
-        // 9) MENÚ USUARIOS: solo admins
-        principal.getMiUsuarios().setEnabled(actual.getRol() == Rol.Administrador);
-        principal.getMiUsuarios().addActionListener(e -> {
-            if (!listaV.isVisible()) desktop.add(listaV);
-            listaV.setVisible(true);
-        });
+                    principal.mostrarMensaje("Bienvenido: " + actual.getUsername());
+                    if (actual.getRol() == Rol.USUARIO) {
+                        principal.deshabilitarMenusAdministrador();
+                    }
 
-        // 10) CERRAR SESIÓN: cierra el frame y relanza Main
-        principal.getMiLogout().addActionListener(e -> {
-            frame.dispose();
-            main(null);
+                    principal.getMenuItemCrearProducto().addActionListener(ev1 -> {
+                        if (!productoAnadirView.isVisible()) {
+                            principal.getDesktopPane().add(productoAnadirView);
+                        }
+                        productoAnadirView.setVisible(true);
+                    });
+
+                    principal.getMenuItemBuscarProducto().addActionListener(ev2 -> {
+                        if (!productoListaView.isVisible()) {
+                            principal.getDesktopPane().add(productoListaView);
+                        }
+                        productoListaView.setVisible(true);
+                    });
+
+                    principal.getMenuItemActualizarProducto().addActionListener(ev3 -> {
+                        if (!productoModView.isVisible()) {
+                            principal.getDesktopPane().add(productoModView);
+                        }
+                        productoModView.setVisible(true);
+                    });
+
+                    principal.getMenuItemEliminarProducto().addActionListener(ev4 -> {
+                        if (!productoElimView.isVisible()) {
+                            principal.getDesktopPane().add(productoElimView);
+                        }
+                        productoElimView.setVisible(true);
+                    });
+
+                    principal.getMenuItemCrearCarrito().addActionListener(ev5 -> {
+                        if (!carritoAnadirView.isVisible()) {
+                            principal.getDesktopPane().add(carritoAnadirView);
+                        }
+                        carritoAnadirView.setVisible(true);
+                    });
+
+                    principal.getMenuItemBuscarCarrito().addActionListener(ev6 -> {
+                        if (!carritoListaView.isVisible()) {
+                            principal.getDesktopPane().add(carritoListaView);
+                        }
+                        carritoListaView.setVisible(true);
+                    });
+
+                    principal.getMenuItemModificarCarrito().addActionListener(ev7 -> {
+                        if (!carritoModView.isVisible()) {
+                            principal.getDesktopPane().add(carritoModView);
+                        }
+                        carritoModView.setVisible(true);
+                    });
+
+                    // CORREGIDO: Eliminar usuario abre elimView
+                    principal.getMenuItemEliminarUsuario().addActionListener(ev8 -> {
+                        if (!elimView.isVisible()) {
+                            principal.getDesktopPane().add(elimView);
+                        }
+                        elimView.setVisible(true);
+                    });
+
+                    principal.getMenuItemCerrarSesion().addActionListener(ev9 -> {
+                        principal.dispose();
+                        main(null); // reiniciar app
+                    });
+                }
+            });
         });
     }
 }

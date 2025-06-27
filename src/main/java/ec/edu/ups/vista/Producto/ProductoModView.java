@@ -4,85 +4,79 @@ import ec.edu.ups.modelo.Producto;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.util.List;
 
 public class ProductoModView extends JInternalFrame {
-    private JTable tableProductos;
-    private DefaultTableModel tableModel;
+
+    private JPanel panelPrincipal;
+    private JTextField txtCodigo;
+    private JTextField txtNombre;
+    private JTextField txtPrecio;
+    private JButton btnBuscar;
     private JButton btnActualizar;
-    private JButton btnRefrescar;
+    private JButton btnCancelar;
+    private JTable tblProductos;
+    private DefaultTableModel modelo;
 
     public ProductoModView() {
-        super("Modificar Productos", true, true, true, true);
-
-        JToolBar toolbar = new JToolBar();
-        toolbar.setFloatable(false);
-        btnRefrescar = new JButton("Refrescar");
-        toolbar.add(btnRefrescar);
-        getContentPane().add(toolbar, BorderLayout.NORTH);
-
-        tableModel = new DefaultTableModel(new Object[]{"Código", "Nombre", "Precio"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column != 0;
-            }
-        };
-        tableProductos = new JTable(tableModel);
-        tableProductos.setFillsViewportHeight(true);
-
-        JScrollPane scroll = new JScrollPane(tableProductos);
-        getContentPane().add(scroll, BorderLayout.CENTER);
-
-        btnActualizar = new JButton("Guardar Cambios");
-        JPanel pnlAcciones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        pnlAcciones.add(btnActualizar);
-        getContentPane().add(pnlAcciones, BorderLayout.SOUTH);
-
-        setSize(600, 400);
+        setContentPane(panelPrincipal);
+        setTitle("Modificar Producto");
+        setClosable(true);
+        setIconifiable(true);
+        setResizable(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setSize(600, 400);
+
+        modelo = new DefaultTableModel(new Object[]{"Código", "Nombre", "Precio"}, 0);
+        tblProductos.setModel(modelo);
     }
 
-    public void listarProductos(List<Producto> productos) {
-        tableModel.setRowCount(0);
-        for (Producto p : productos) {
-            tableModel.addRow(new Object[]{
-                    p.getCodigo(),
-                    p.getNombre(),
-                    p.getPrecio()
-            });
-        }
+    public JTextField getTxtCodigo() {
+        return txtCodigo;
     }
 
-    public JTable getTableProductos() {
-        return tableProductos;
+    public JTextField getTxtNombre() {
+        return txtNombre;
     }
 
-    public void setTableProductos(JTable tableProductos) {
-        this.tableProductos = tableProductos;
+    public JTextField getTxtPrecio() {
+        return txtPrecio;
+    }
+
+    public JButton getBtnBuscar() {
+        return btnBuscar;
     }
 
     public JButton getBtnActualizar() {
         return btnActualizar;
     }
 
-    public void setBtnActualizar(JButton btnActualizar) {
-        this.btnActualizar = btnActualizar;
+    public JButton getBtnCancelar() {
+        return btnCancelar;
     }
 
-    public JButton getBtnRefrescar() {
-        return btnRefrescar;
-    }
-
-    public void setBtnRefrescar(JButton btnRefrescar) {
-        this.btnRefrescar = btnRefrescar;
+    public JTable getTableProductos() {
+        return tblProductos;
     }
 
     public DefaultTableModel getTableModel() {
-        return tableModel;
+        return modelo;
     }
 
-    public void setTableModel(DefaultTableModel tableModel) {
-        this.tableModel = tableModel;
+    public void listarProductos(List<Producto> productos) {
+        modelo.setRowCount(0);
+        for (Producto p : productos) {
+            modelo.addRow(new Object[]{p.getCodigo(), p.getNombre(), p.getPrecio()});
+        }
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje);
+    }
+
+    public void limpiarCampos() {
+        txtCodigo.setText("");
+        txtNombre.setText("");
+        txtPrecio.setText("");
     }
 }

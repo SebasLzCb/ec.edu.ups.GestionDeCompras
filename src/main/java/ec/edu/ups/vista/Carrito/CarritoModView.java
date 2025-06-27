@@ -2,40 +2,46 @@ package ec.edu.ups.vista.Carrito;
 
 import javax.swing.*;
 
-public class CarritoListaView extends JInternalFrame {
-    private JPanel panelPrincipal;
-    private JTextField txtCodigo;
-    private JButton btnBuscar;
-    private JButton btnListar;
-    private JTable table1;
-    private JTextField txtTotal;
+public class CarritoModView extends JInternalFrame {
 
-    public CarritoListaView() {
+    private JPanel panelPrincipal;
+    private JTextField textCodigo;
+    private JButton btnBuscar;
+    private JTable table1;
+    private JButton btnCancelar;
+    private JTextField txtTotal;
+    private JScrollBar scrollBar1;
+    private JButton btnActualizar;
+
+    public CarritoModView() {
         setContentPane(panelPrincipal);
-        setTitle("Listar Carrito");
+        setTitle("Modificar Carrito");
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(600, 400);
-        setLocation(30, 30); // puedes ajustar posición inicial
+        setLocation(30, 30);
     }
 
-    // Getters públicos para que el controlador pueda acceder
     public JTextField getTxtCodigo() {
-        return txtCodigo;
+        return textCodigo;
     }
 
     public JButton getBtnBuscar() {
         return btnBuscar;
     }
 
-    public JButton getBtnListar() {
-        return btnListar;
+    public JTable getTable1() {
+        return table1;
     }
 
-    public JTable getTablaCarrito() {
-        return table1;
+    public JButton getBtnActualizar() {
+        return btnActualizar;
+    }
+
+    public JButton getBtnCancelar() {
+        return btnCancelar;
     }
 
     public JTextField getTxtTotal() {

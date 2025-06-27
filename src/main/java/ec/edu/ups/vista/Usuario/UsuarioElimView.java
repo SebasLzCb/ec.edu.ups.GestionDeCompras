@@ -2,49 +2,75 @@ package ec.edu.ups.vista.Usuario;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 
 public class UsuarioElimView extends JInternalFrame {
-    private JPanel panel;
+
+    private JPanel panelPrincipal;
     private JComboBox<String> cbxFiltro;
     private JTextField txtBuscar;
     private JButton btnBuscar;
-    private JTable tabla;
-    private DefaultTableModel model;
+    private JTable tblUsuarios;
     private JButton btnEliminar;
+    private DefaultTableModel model;
+
+    // Este componente lo agrega automáticamente el diseñador cuando usas JScrollPane
+    private JScrollBar scrollBar1;
 
     public UsuarioElimView() {
-        super("Eliminar Usuario", true, true, true, true);
-        panel = new JPanel(new BorderLayout(5,5));
-        JPanel pnlNorte = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        pnlNorte.add(new JLabel("Buscar por:"));
-        cbxFiltro = new JComboBox<>(new String[]{"Usuario","Rol"});
-        pnlNorte.add(cbxFiltro);
-        txtBuscar = new JTextField(10);
-        pnlNorte.add(txtBuscar);
-        btnBuscar = new JButton("Buscar");
-        pnlNorte.add(btnBuscar);
-        panel.add(pnlNorte, BorderLayout.NORTH);
+        setContentPane(panelPrincipal);
+        setTitle("Eliminar Usuario");
+        setClosable(true);
+        setIconifiable(true);
+        setResizable(true);
+        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setSize(600, 400);
 
-        model = new DefaultTableModel(new Object[]{"Usuario","Rol"},0){
-            @Override public boolean isCellEditable(int r,int c){return false;}
-        };
-        tabla = new JTable(model);
-        panel.add(new JScrollPane(tabla), BorderLayout.CENTER);
+        // Inicializar modelo y tabla
+        model = new DefaultTableModel(new Object[]{"Username", "Rol"}, 0);
+        tblUsuarios.setModel(model);
 
-        btnEliminar = new JButton("Eliminar");
-        JPanel pnlSur = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        pnlSur.add(btnEliminar);
-        panel.add(pnlSur, BorderLayout.SOUTH);
-
-        setContentPane(panel);
-        setSize(450,350);
+        // Agregar filtro (puede hacerse en el diseñador también)
+        cbxFiltro.addItem("Username");
     }
 
-    public JTable         getTableUsuarios(){ return tabla; }
-    public DefaultTableModel getTableModel(){ return model; }
-    public JButton        getBtnEliminar()  { return btnEliminar; }
-    public JComboBox<String> getCbxFiltro() { return cbxFiltro; }
-    public JTextField     getTxtBuscar()    { return txtBuscar; }
-    public JButton        getBtnBuscar()    { return btnBuscar; }
+    // Getters
+    public JTable getTableUsuarios() {
+        return tblUsuarios;
+    }
+
+    public DefaultTableModel getTableModel() {
+        return model;
+    }
+
+    public JButton getBtnEliminar() {
+        return btnEliminar;
+    }
+
+    public JComboBox<String> getCbxFiltro() {
+        return cbxFiltro;
+    }
+
+    public JTextField getTxtBuscar() {
+        return txtBuscar;
+    }
+
+    public JButton getBtnBuscar() {
+        return btnBuscar;
+    }
+
+    public JPanel getPanelPrincipal() {
+        return panelPrincipal;
+    }
+
+    public JScrollBar getScrollBar1() {
+        return scrollBar1;
+    }
+
+    public void setTableModel(DefaultTableModel model) {
+        this.model = model;
+    }
+
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje);
+    }
 }
