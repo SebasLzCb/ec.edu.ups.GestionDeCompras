@@ -25,10 +25,10 @@ public class Principal extends JFrame {
     private JMenuItem menuItemEliminarUsuario;
     private JMenuItem menuItemCerrarSesion;
 
-    private JDesktopPane desktopPane;
+    private MiJDesktopPane desktopPane;
 
     public Principal() {
-        desktopPane = new JDesktopPane();
+        desktopPane = new MiJDesktopPane();
         menuBar = new JMenuBar();
 
         // Menú Producto

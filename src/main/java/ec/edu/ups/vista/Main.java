@@ -23,15 +23,13 @@ public class Main {
         java.awt.EventQueue.invokeLater(() -> {
             UsuarioDAO usuarioDAO = new UsuarioDAOMemoria();
 
-            // Vistas de login y usuario
             LoginView loginView = new LoginView();
             UsuarioListaView listaUsuarios = new UsuarioListaView();
             UsuarioRegistroView registroView = new UsuarioRegistroView();
             UsuarioModView modView = new UsuarioModView();
             UsuarioElimView elimView = new UsuarioElimView();
-            Principal principal = new Principal(); // Se mueve aquí
+            Principal principal = new Principal();
 
-            // Controlador de usuarios con el principal
             UsuarioController usuarioController = new UsuarioController(
                     loginView, usuarioDAO, listaUsuarios, registroView, modView, elimView, principal
             );
@@ -126,7 +124,6 @@ public class Main {
                         carritoModView.setVisible(true);
                     });
 
-                    // CORREGIDO: Eliminar usuario abre elimView
                     principal.getMenuItemEliminarUsuario().addActionListener(ev8 -> {
                         if (!elimView.isVisible()) {
                             principal.getDesktopPane().add(elimView);
@@ -136,7 +133,7 @@ public class Main {
 
                     principal.getMenuItemCerrarSesion().addActionListener(ev9 -> {
                         principal.dispose();
-                        main(null); // reiniciar app
+                        main(null);
                     });
                 }
             });
