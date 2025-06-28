@@ -3,36 +3,29 @@
   <grid id="27dc6" binding="panelPrincipal" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="500" height="400"/>
+      <xy x="5" y="5" width="540" height="386"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
-      <grid id="addad" layout-manager="GridLayoutManager" row-count="4" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="addad" binding="JPaneIngresarPrd" layout-manager="GridLayoutManager" row-count="4" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="100" left="100" bottom="100" right="100"/>
         <constraints>
-          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <background color="-2631721"/>
+          <background color="-1"/>
+          <enabled value="true"/>
+          <font name="Segoe UI" size="16" style="1"/>
         </properties>
-        <border type="line" title="Ingrese los datos del producto" title-justification="2">
+        <border type="none" title-justification="2">
           <font size="14" style="1"/>
           <color color="-16777216"/>
         </border>
         <children>
-          <component id="fa947" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <font name="Courier New" size="14" style="1"/>
-              <text value="Precio:"/>
-            </properties>
-          </component>
           <component id="862b" class="javax.swing.JTextField" binding="txtPrecio">
             <constraints>
-              <grid row="2" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+              <grid row="2" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
@@ -40,18 +33,18 @@
               <toolTipText value="Ingresa el precio"/>
             </properties>
           </component>
-          <component id="4262" class="javax.swing.JLabel">
+          <component id="4262" class="javax.swing.JLabel" binding="lblNombre">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <font name="Courier New" size="14" style="1"/>
+              <font name="Segoe UI" size="14" style="1"/>
               <text value="Nombre:"/>
             </properties>
           </component>
           <component id="71c51" class="javax.swing.JTextField" binding="txtNombre">
             <constraints>
-              <grid row="1" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+              <grid row="1" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
@@ -59,18 +52,9 @@
               <toolTipText value="Ingresa el nombre (ej. Producto 1)"/>
             </properties>
           </component>
-          <component id="410d7" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="4" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <font name="Courier New" size="14" style="1"/>
-              <text value="Codigo:"/>
-            </properties>
-          </component>
           <component id="e357c" class="javax.swing.JTextField" binding="txtCodigo">
             <constraints>
-              <grid row="0" column="1" row-span="1" col-span="2" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
+              <grid row="0" column="1" row-span="1" col-span="3" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
@@ -81,22 +65,38 @@
           </component>
           <component id="f2e83" class="javax.swing.JButton" binding="btnAceptar">
             <constraints>
-              <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false">
-                <preferred-size width="126" height="34"/>
-              </grid>
+              <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <font name="Courier New" size="14"/>
+              <font name="Segoe UI" size="14" style="1"/>
               <text value="Aceptar"/>
             </properties>
           </component>
           <component id="13abb" class="javax.swing.JButton" binding="btnLimpiar">
             <constraints>
-              <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <font name="Courier New" size="14"/>
+              <font name="Segoe UI" size="14" style="1"/>
               <text value="Limpiar"/>
+            </properties>
+          </component>
+          <component id="410d7" class="javax.swing.JLabel" binding="lblCodigo">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <font name="Segoe UI" size="14" style="1"/>
+              <text value="Codigo:"/>
+            </properties>
+          </component>
+          <component id="fa947" class="javax.swing.JLabel" binding="lblPrecio">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <font name="Segoe UI" size="14" style="1"/>
+              <text value="Precio:"/>
             </properties>
           </component>
         </children>

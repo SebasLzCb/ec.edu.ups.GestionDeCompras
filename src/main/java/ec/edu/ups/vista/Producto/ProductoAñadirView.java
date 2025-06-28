@@ -1,24 +1,48 @@
 package ec.edu.ups.vista.Producto;
+
+import ec.edu.ups.modelo.Producto;
+import ec.edu.ups.util.MensajeInternacionalizacionHandler;
+
 import javax.swing.*;
 import java.util.List;
-import ec.edu.ups.modelo.Producto;
 
 public class ProductoAñadirView extends JInternalFrame {
+
     private JPanel panelPrincipal;
     private JTextField txtCodigo;
     private JTextField txtNombre;
     private JTextField txtPrecio;
     private JButton btnAceptar;
     private JButton btnLimpiar;
+    private JPanel JPaneIngresarPrd;
+    private JLabel lblCodigo;
+    private JLabel lblPrecio;
+    private JLabel lblNombre;
 
-    public ProductoAñadirView() {
+    private MensajeInternacionalizacionHandler mensajeHandler;
+
+    public ProductoAñadirView(MensajeInternacionalizacionHandler mensajeHandler) {
+        super("", true, true, true, true);
+        this.mensajeHandler = mensajeHandler;
+
         setContentPane(panelPrincipal);
-        setTitle("Datos del Producto");
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(500, 300);
+
+        actualizarIdioma();
+        pack();
+    }
+
+    public void actualizarIdioma() {
+        setTitle(mensajeHandler.get("producto.view.anadir.titulo"));
+        btnAceptar.setText(mensajeHandler.get("producto.view.anadir.aceptar"));
+        btnLimpiar.setText(mensajeHandler.get("producto.view.anadir.limpiar"));
+
+        lblCodigo.setText(mensajeHandler.get("producto.view.anadir.codigo"));
+        lblNombre.setText(mensajeHandler.get("producto.view.anadir.nombre"));
+        lblPrecio.setText(mensajeHandler.get("producto.view.anadir.precio"));
     }
 
     public JTextField getTxtCodigo() {
@@ -37,6 +61,10 @@ public class ProductoAñadirView extends JInternalFrame {
         return btnAceptar;
     }
 
+    public JButton getBtnLimpiar() {
+        return btnLimpiar;
+    }
+
     public void mostrarMensaje(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje);
     }
@@ -52,5 +80,4 @@ public class ProductoAñadirView extends JInternalFrame {
             System.out.println(producto);
         }
     }
-
 }

@@ -1,12 +1,15 @@
 package ec.edu.ups.vista.Producto;
 
 import ec.edu.ups.modelo.Producto;
+import ec.edu.ups.util.MensajeInternacionalizacionHandler;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
 
 public class ProductoModView extends JInternalFrame {
+
+    private final MensajeInternacionalizacionHandler mensajeHandler;
 
     private JPanel panelPrincipal;
     private JTextField txtCodigo;
@@ -18,17 +21,37 @@ public class ProductoModView extends JInternalFrame {
     private JTable tblProductos;
     private DefaultTableModel modelo;
 
-    public ProductoModView() {
+    public ProductoModView(MensajeInternacionalizacionHandler mensajeHandler) {
+        this.mensajeHandler = mensajeHandler;
+
         setContentPane(panelPrincipal);
-        setTitle("Modificar Producto");
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(600, 400);
 
-        modelo = new DefaultTableModel(new Object[]{"Código", "Nombre", "Precio"}, 0);
+        modelo = new DefaultTableModel(new Object[]{
+                mensajeHandler.get("producto.view.modificar.codigo"),
+                mensajeHandler.get("producto.view.modificar.nombre"),
+                mensajeHandler.get("producto.view.modificar.precio")
+        }, 0);
         tblProductos.setModel(modelo);
+
+        actualizarIdioma();
+    }
+
+    public void actualizarIdioma() {
+        setTitle(mensajeHandler.get("producto.view.modificar.titulo"));
+        btnBuscar.setText(mensajeHandler.get("producto.view.modificar.buscar"));
+        btnActualizar.setText(mensajeHandler.get("producto.view.modificar.actualizar"));
+        btnCancelar.setText(mensajeHandler.get("producto.view.modificar.cancelar"));
+
+        modelo.setColumnIdentifiers(new Object[]{
+                mensajeHandler.get("producto.view.modificar.codigo"),
+                mensajeHandler.get("producto.view.modificar.nombre"),
+                mensajeHandler.get("producto.view.modificar.precio")
+        });
     }
 
     public JTextField getTxtCodigo() {

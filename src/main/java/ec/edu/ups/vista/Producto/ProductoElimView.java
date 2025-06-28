@@ -1,6 +1,7 @@
 package ec.edu.ups.vista.Producto;
 
 import ec.edu.ups.dao.ProductoDAO;
+import ec.edu.ups.util.MensajeInternacionalizacionHandler;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -8,27 +9,52 @@ import javax.swing.table.DefaultTableModel;
 public class ProductoElimView extends JInternalFrame {
 
     private final ProductoDAO productoDAO;
+    private final MensajeInternacionalizacionHandler mensajeHandler;
 
     private JPanel panelPrincipal;
     private JComboBox<String> comboFiltro;
     private JTextField txtBusqueda;
     private JButton btnBuscar;
     private JTable tablaResultado;
-    private JScrollBar scrollBar1;
     private JButton btnEliminar;
     private DefaultTableModel modelResultado;
 
-    public ProductoElimView(ProductoDAO dao) {
+    public ProductoElimView(ProductoDAO dao, MensajeInternacionalizacionHandler mensajeHandler) {
         this.productoDAO = dao;
+        this.mensajeHandler = mensajeHandler;
 
         setContentPane(panelPrincipal);
-
-        setTitle("Eliminar Producto");
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(600, 400);
+
+        comboFiltro.addItem(mensajeHandler.get("producto.view.eliminar.filtro.nombre"));
+        comboFiltro.addItem(mensajeHandler.get("producto.view.eliminar.filtro.codigo"));
+
+        modelResultado = new DefaultTableModel(new Object[]{
+                mensajeHandler.get("producto.view.modificar.codigo"),
+                mensajeHandler.get("producto.view.modificar.nombre"),
+                mensajeHandler.get("producto.view.modificar.precio")
+        }, 0);
+        tablaResultado.setModel(modelResultado);
+
+        actualizarIdioma();
+    }
+
+    public void actualizarIdioma() {
+        setTitle(mensajeHandler.get("producto.view.eliminar.titulo"));
+        btnBuscar.setText(mensajeHandler.get("producto.view.eliminar.buscar"));
+        btnEliminar.setText(mensajeHandler.get("producto.view.eliminar.eliminar"));
+
+        // Actualizar comboBox si se quiere refrescar:
+        comboFiltro.removeAllItems();
+        comboFiltro.addItem(mensajeHandler.get("producto.view.eliminar.filtro.nombre"));
+        comboFiltro.addItem(mensajeHandler.get("producto.view.eliminar.filtro.codigo"));
+
+        // Las columnas de la tabla no se actualizan automáticamente si ya hay datos
+        // Se recomienda recargar los datos al cambiar idioma si es necesario
     }
 
     public JTable getTablaResultado() {
