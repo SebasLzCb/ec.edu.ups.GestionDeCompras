@@ -20,6 +20,9 @@ public class ProductoModView extends JInternalFrame {
     private JButton btnCancelar;
     private JTable tblProductos;
     private DefaultTableModel modelo;
+    private JLabel lblCodigo;
+    private JLabel lblNombre;
+    private JLabel lblPrecio;
 
     public ProductoModView(MensajeInternacionalizacionHandler mensajeHandler) {
         this.mensajeHandler = mensajeHandler;
@@ -31,18 +34,14 @@ public class ProductoModView extends JInternalFrame {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(600, 400);
 
-        modelo = new DefaultTableModel(new Object[]{
-                mensajeHandler.get("producto.view.modificar.codigo"),
-                mensajeHandler.get("producto.view.modificar.nombre"),
-                mensajeHandler.get("producto.view.modificar.precio")
-        }, 0);
-        tblProductos.setModel(modelo);
-
         actualizarIdioma();
     }
 
     public void actualizarIdioma() {
         setTitle(mensajeHandler.get("producto.view.modificar.titulo"));
+        lblCodigo.setText(mensajeHandler.get("producto.view.modificar.codigo"));
+        lblNombre.setText(mensajeHandler.get("producto.view.modificar.nombre"));
+        lblPrecio.setText(mensajeHandler.get("producto.view.modificar.precio"));
         btnBuscar.setText(mensajeHandler.get("producto.view.modificar.buscar"));
         btnActualizar.setText(mensajeHandler.get("producto.view.modificar.actualizar"));
         btnCancelar.setText(mensajeHandler.get("producto.view.modificar.cancelar"));

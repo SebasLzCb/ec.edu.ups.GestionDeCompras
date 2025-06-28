@@ -3,6 +3,7 @@ package ec.edu.ups.vista;
 import ec.edu.ups.util.MensajeInternacionalizacionHandler;
 
 import javax.swing.*;
+import java.beans.PropertyVetoException;
 
 public class Principal extends JFrame {
 
@@ -125,20 +126,37 @@ public class Principal extends JFrame {
         menuItemIdiomaFrances.setText(mensaje("menu.idioma.fr"));
 
         for (JInternalFrame frame : desktopPane.getAllFrames()) {
-            if (frame instanceof ec.edu.ups.vista.Producto.ProductoAñadirView p) p.actualizarIdioma();
-            else if (frame instanceof ec.edu.ups.vista.Producto.ProductoListaView p) p.actualizarIdioma();
-            else if (frame instanceof ec.edu.ups.vista.Producto.ProductoModView p) p.actualizarIdioma();
-            else if (frame instanceof ec.edu.ups.vista.Producto.ProductoElimView p) p.actualizarIdioma();
+            try {
+                frame.setSelected(true);
+            } catch (PropertyVetoException e) {
+                e.printStackTrace();
+            }
 
-            else if (frame instanceof ec.edu.ups.vista.Carrito.CarritoAñadirView c) c.actualizarIdioma();
-            else if (frame instanceof ec.edu.ups.vista.Carrito.CarritoListaView c) c.actualizarIdioma();
-            else if (frame instanceof ec.edu.ups.vista.Carrito.CarritoModView c) c.actualizarIdioma();
-            else if (frame instanceof ec.edu.ups.vista.Carrito.CarritoElimView c) c.actualizarIdioma();
-
-            else if (frame instanceof ec.edu.ups.vista.Usuario.UsuarioRegistroView u) u.actualizarIdioma();
-            else if (frame instanceof ec.edu.ups.vista.Usuario.UsuarioListaView u) u.actualizarIdioma();
-            else if (frame instanceof ec.edu.ups.vista.Usuario.UsuarioModView u) u.actualizarIdioma();
-            else if (frame instanceof ec.edu.ups.vista.Usuario.UsuarioElimView u) u.actualizarIdioma();
+            if (frame instanceof ec.edu.ups.vista.Producto.ProductoAñadirView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Producto.ProductoModView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Producto.ProductoListaView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Producto.ProductoElimView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Carrito.CarritoAñadirView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Carrito.CarritoListaView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Carrito.CarritoModView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Carrito.CarritoElimView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Usuario.UsuarioRegistroView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Usuario.UsuarioListaView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Usuario.UsuarioModView view) {
+                view.actualizarIdioma();
+            } else if (frame instanceof ec.edu.ups.vista.Usuario.UsuarioElimView view) {
+                view.actualizarIdioma();
+            }
         }
     }
 

@@ -48,13 +48,15 @@ public class ProductoElimView extends JInternalFrame {
         btnBuscar.setText(mensajeHandler.get("producto.view.eliminar.buscar"));
         btnEliminar.setText(mensajeHandler.get("producto.view.eliminar.eliminar"));
 
-        // Actualizar comboBox si se quiere refrescar:
         comboFiltro.removeAllItems();
         comboFiltro.addItem(mensajeHandler.get("producto.view.eliminar.filtro.nombre"));
         comboFiltro.addItem(mensajeHandler.get("producto.view.eliminar.filtro.codigo"));
 
-        // Las columnas de la tabla no se actualizan automáticamente si ya hay datos
-        // Se recomienda recargar los datos al cambiar idioma si es necesario
+        modelResultado.setColumnIdentifiers(new Object[]{
+                mensajeHandler.get("producto.view.modificar.codigo"),
+                mensajeHandler.get("producto.view.modificar.nombre"),
+                mensajeHandler.get("producto.view.modificar.precio")
+        });
     }
 
     public JTable getTablaResultado() {

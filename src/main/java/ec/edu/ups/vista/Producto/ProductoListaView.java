@@ -16,6 +16,7 @@ public class ProductoListaView extends JInternalFrame {
     private JTable tblProductos;
     private JPanel panelPrincipal;
     private JButton btnListar;
+    private JLabel lblNombre;
     private DefaultTableModel modelo;
 
     public ProductoListaView(MensajeInternacionalizacionHandler mensajeHandler) {
@@ -42,8 +43,8 @@ public class ProductoListaView extends JInternalFrame {
         setTitle(mensajeHandler.get("producto.view.listar.titulo"));
         btnBuscar.setText(mensajeHandler.get("producto.view.listar.buscar"));
         btnListar.setText(mensajeHandler.get("producto.view.listar.listar"));
+        lblNombre.setText(mensajeHandler.get("producto.view.listar.nombre"));
 
-        // Actualiza nombres de columnas si es necesario
         modelo.setColumnIdentifiers(new Object[]{
                 mensajeHandler.get("producto.view.modificar.codigo"),
                 mensajeHandler.get("producto.view.modificar.nombre"),
