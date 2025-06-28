@@ -4,16 +4,11 @@ import ec.edu.ups.dao.CarritoDAO;
 import ec.edu.ups.modelo.Carrito;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 public class CarritoDAOMemoria implements CarritoDAO {
 
-    private List<Carrito> carritos;
-
-    public CarritoDAOMemoria() {
-        this.carritos = new ArrayList<Carrito>();
-    }
+    private final List<Carrito> carritos = new ArrayList<>();
 
     @Override
     public void crear(Carrito carrito) {
@@ -22,9 +17,9 @@ public class CarritoDAOMemoria implements CarritoDAO {
 
     @Override
     public Carrito buscarPorCodigo(int codigo) {
-        for (Carrito carrito : carritos) {
-            if (carrito.getCodigo() == codigo) {
-                return carrito;
+        for (Carrito c : carritos) {
+            if (c.getCodigo() == codigo) {
+                return c;
             }
         }
         return null;
@@ -35,24 +30,18 @@ public class CarritoDAOMemoria implements CarritoDAO {
         for (int i = 0; i < carritos.size(); i++) {
             if (carritos.get(i).getCodigo() == carrito.getCodigo()) {
                 carritos.set(i, carrito);
-                break;
+                return;
             }
         }
     }
 
     @Override
     public void eliminar(int codigo) {
-        Iterator<Carrito> iterator = carritos.iterator();
-        while (iterator.hasNext()) {
-            Carrito carrito = iterator.next();
-            if (carrito.getCodigo() == codigo) {
-                iterator.remove();
-            }
-        }
+        carritos.removeIf(c -> c.getCodigo() == codigo);
     }
 
     @Override
     public List<Carrito> listarTodos() {
-        return carritos;
+        return new ArrayList<>(carritos);
     }
 }

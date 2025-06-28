@@ -13,7 +13,7 @@ public class Carrito {
     private int codigo;
     private GregorianCalendar fechaCreacion;
     private List<ItemCarrito> items;
-    private Usuario usuario; // 🔸 atributo agregado para relación con Usuario
+    private Usuario usuario;
 
     public Carrito() {
         this.codigo = contador++;
@@ -21,7 +21,6 @@ public class Carrito {
         this.fechaCreacion = new GregorianCalendar();
     }
 
-    // 🔸 GETTER y SETTER del código
     public int getCodigo() {
         return codigo;
     }
@@ -30,7 +29,6 @@ public class Carrito {
         this.codigo = codigo;
     }
 
-    // 🔸 FECHA
     public GregorianCalendar getFechaCreacion() {
         return fechaCreacion;
     }
@@ -39,7 +37,6 @@ public class Carrito {
         this.fechaCreacion = fechaCreacion;
     }
 
-    // 🔸 USUARIO (getter y setter requeridos por el controlador)
     public Usuario getUsuario() {
         return usuario;
     }
@@ -48,7 +45,6 @@ public class Carrito {
         this.usuario = usuario;
     }
 
-    // 🔸 OPERACIONES DEL CARRITO
     public void agregarProducto(Producto producto, int cantidad) {
         items.add(new ItemCarrito(producto, cantidad));
     }
