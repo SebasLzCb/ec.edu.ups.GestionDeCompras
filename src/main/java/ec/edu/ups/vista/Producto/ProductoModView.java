@@ -34,6 +34,9 @@ public class ProductoModView extends JInternalFrame {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(600, 400);
 
+        // Inicializar modelo desde la tabla (JTable ya configurada en el .form)
+        modelo = (DefaultTableModel) tblProductos.getModel();
+
         actualizarIdioma();
     }
 

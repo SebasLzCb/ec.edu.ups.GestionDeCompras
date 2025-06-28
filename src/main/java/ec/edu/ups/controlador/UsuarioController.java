@@ -84,11 +84,7 @@ public class UsuarioController {
             loginView.mostrarMensaje("Usuario o contraseña incorrectos.");
         } else {
             loginView.dispose();
-            principal.setVisible(true);
-
-            if (usuarioActual.getRol() == Rol.USUARIO) {
-                principal.deshabilitarMenusAdministrador();
-            }
+            loginView.dispatchEvent(new java.awt.event.WindowEvent(loginView, java.awt.event.WindowEvent.WINDOW_CLOSED));
         }
     }
 

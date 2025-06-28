@@ -24,8 +24,9 @@ public class Main {
         java.awt.EventQueue.invokeLater(() -> {
 
             MensajeInternacionalizacionHandler mensajeHandler = new MensajeInternacionalizacionHandler("es", "EC");
-
             UsuarioDAO usuarioDAO = new UsuarioDAOMemoria();
+            ProductoDAO productoDAO = new ProductoDAOMemoria();
+            CarritoDAO carritoDAO = new CarritoDAOMemoria();
 
             LoginView loginView = new LoginView();
             UsuarioRegistroView registroView = new UsuarioRegistroView(mensajeHandler);
@@ -33,11 +34,24 @@ public class Main {
             UsuarioModView modView = new UsuarioModView(mensajeHandler);
             UsuarioElimView elimView = new UsuarioElimView(mensajeHandler);
 
+            ProductoAñadirView productoAnadirView = new ProductoAñadirView(mensajeHandler);
+            ProductoListaView productoListaView = new ProductoListaView(mensajeHandler);
+            ProductoModView productoModView = new ProductoModView(mensajeHandler);
+            ProductoElimView productoElimView = new ProductoElimView(productoDAO, mensajeHandler);
+
+            CarritoAñadirView carritoAnadirView = new CarritoAñadirView(mensajeHandler);
+            CarritoListaView carritoListaView = new CarritoListaView(mensajeHandler);
+            CarritoModView carritoModView = new CarritoModView(mensajeHandler);
+            CarritoElimView carritoElimView = new CarritoElimView(mensajeHandler);
+
             Principal principal = new Principal(mensajeHandler);
 
             UsuarioController usuarioController = new UsuarioController(
                     usuarioDAO, loginView, registroView, listaView, modView, elimView, principal
             );
+
+            new ProductoController(productoDAO, productoAnadirView, productoListaView, productoModView, productoElimView);
+            new CarritoController(carritoDAO, productoDAO, carritoAnadirView, carritoListaView, carritoModView, carritoElimView, null);
 
             loginView.setVisible(true);
 
@@ -46,22 +60,6 @@ public class Main {
                 public void windowClosed(WindowEvent e) {
                     Usuario actual = usuarioController.getUsuarioActual();
                     if (actual == null) System.exit(0);
-
-                    ProductoDAO productoDAO = new ProductoDAOMemoria();
-                    CarritoDAO carritoDAO = new CarritoDAOMemoria();
-
-                    ProductoAñadirView productoAnadirView = new ProductoAñadirView(mensajeHandler);
-                    ProductoListaView productoListaView = new ProductoListaView(mensajeHandler);
-                    ProductoModView productoModView = new ProductoModView(mensajeHandler);
-                    ProductoElimView productoElimView = new ProductoElimView(productoDAO, mensajeHandler);
-
-                    CarritoAñadirView carritoAnadirView = new CarritoAñadirView(mensajeHandler);
-                    CarritoListaView carritoListaView = new CarritoListaView(mensajeHandler);
-                    CarritoModView carritoModView = new CarritoModView(mensajeHandler);
-                    CarritoElimView carritoElimView = new CarritoElimView(mensajeHandler);
-
-                    new ProductoController(productoDAO, productoAnadirView, productoListaView, productoModView, productoElimView);
-                    new CarritoController(carritoDAO, productoDAO, carritoAnadirView, carritoListaView, carritoModView, carritoElimView, actual);
 
                     principal.setVisible(true);
                     principal.mostrarMensaje("Bienvenido: " + actual.getUsername());
@@ -100,9 +98,11 @@ public class Main {
 
     private static void mostrarVentana(Principal principal, javax.swing.JInternalFrame ventana) {
         if (!ventana.isVisible()) {
-            principal.getDesktopPane().add(ventana);
+            if (ventana.getParent() == null) {
+                principal.getDesktopPane().add(ventana);
+            }
+            ventana.setVisible(true);
         }
-        ventana.setVisible(true);
         ventana.toFront();
     }
 }
