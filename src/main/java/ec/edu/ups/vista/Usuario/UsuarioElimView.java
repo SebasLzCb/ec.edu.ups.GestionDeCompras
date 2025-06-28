@@ -1,9 +1,13 @@
 package ec.edu.ups.vista.Usuario;
 
+import ec.edu.ups.util.MensajeInternacionalizacionHandler;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 public class UsuarioElimView extends JInternalFrame {
+
+    private MensajeInternacionalizacionHandler mensajeHandler;
 
     private JPanel panelPrincipal;
     private JComboBox<String> cbxFiltro;
@@ -13,27 +17,32 @@ public class UsuarioElimView extends JInternalFrame {
     private JButton btnEliminar;
     private DefaultTableModel model;
 
-    // Este componente lo agrega automáticamente el diseñador cuando usas JScrollPane
-    private JScrollBar scrollBar1;
+    public UsuarioElimView(MensajeInternacionalizacionHandler mensajeHandler) {
+        this.mensajeHandler = mensajeHandler;
 
-    public UsuarioElimView() {
         setContentPane(panelPrincipal);
-        setTitle("Eliminar Usuario");
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(600, 400);
 
-        // Inicializar modelo y tabla
         model = new DefaultTableModel(new Object[]{"Username", "Rol"}, 0);
         tblUsuarios.setModel(model);
 
-        // Agregar filtro (puede hacerse en el diseñador también)
-        cbxFiltro.addItem("Username");
+        actualizarIdioma();
     }
 
-    // Getters
+    public void actualizarIdioma() {
+        setTitle(mensajeHandler.get("usuario.view.eliminar.titulo"));
+        btnBuscar.setText(mensajeHandler.get("usuario.view.eliminar.buscar"));
+        btnEliminar.setText(mensajeHandler.get("usuario.view.eliminar.eliminar"));
+
+        cbxFiltro.removeAllItems();
+        cbxFiltro.addItem(mensajeHandler.get("usuario.view.eliminar.filtro.username"));
+        cbxFiltro.addItem(mensajeHandler.get("usuario.view.eliminar.filtro.rol"));
+    }
+
     public JTable getTableUsuarios() {
         return tblUsuarios;
     }
@@ -60,10 +69,6 @@ public class UsuarioElimView extends JInternalFrame {
 
     public JPanel getPanelPrincipal() {
         return panelPrincipal;
-    }
-
-    public JScrollBar getScrollBar1() {
-        return scrollBar1;
     }
 
     public void setTableModel(DefaultTableModel model) {

@@ -1,9 +1,13 @@
 package ec.edu.ups.vista.Usuario;
 
+import ec.edu.ups.util.MensajeInternacionalizacionHandler;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 public class UsuarioListaView extends JInternalFrame {
+
+    private MensajeInternacionalizacionHandler mensajeHandler;
 
     private JPanel panelPrincipal;
     private JTable tblUsuario;
@@ -12,27 +16,33 @@ public class UsuarioListaView extends JInternalFrame {
     private JButton btnBuscar;
     private JButton btnRefrescar;
     private JComboBox<String> cbxFiltro;
-    private JScrollBar scrollBar1;
 
-    public UsuarioListaView() {
+    public UsuarioListaView(MensajeInternacionalizacionHandler mensajeHandler) {
+        this.mensajeHandler = mensajeHandler;
+
         setContentPane(panelPrincipal);
-        setTitle("Lista de Usuarios");
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(600, 400);
 
-        // ✅ Inicializa modelo y tabla
         model = new DefaultTableModel(new Object[]{"Username", "Rol"}, 0);
         tblUsuario.setModel(model);
 
-        // ✅ Carga filtros
-        cbxFiltro.addItem("Username");
-        cbxFiltro.addItem("Rol");
+        actualizarIdioma();
     }
 
-    // 🧱 Getters para uso en el controlador
+    public void actualizarIdioma() {
+        setTitle(mensajeHandler.get("usuario.view.listar.titulo"));
+        btnBuscar.setText(mensajeHandler.get("usuario.view.listar.buscar"));
+        btnRefrescar.setText(mensajeHandler.get("usuario.view.listar.refrescar"));
+
+        cbxFiltro.removeAllItems();
+        cbxFiltro.addItem(mensajeHandler.get("usuario.view.eliminar.filtro.username"));
+        cbxFiltro.addItem(mensajeHandler.get("usuario.view.eliminar.filtro.rol"));
+    }
+
     public JComboBox<String> getComboFiltro() {
         return cbxFiltro;
     }
