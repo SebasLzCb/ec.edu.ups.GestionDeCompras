@@ -10,40 +10,39 @@ import java.util.List;
 public class ProductoListaView extends JInternalFrame {
 
     private final MensajeInternacionalizacionHandler mensajeHandler;
-
+    private JPanel panelPrincipal;
+    private JLabel lblNombre;
     private JTextField txtBuscar;
     private JButton btnBuscar;
-    private JTable tblProductos;
-    private JPanel panelPrincipal;
     private JButton btnListar;
-    private JLabel lblNombre;
+    private JTable tblProductos;
     private DefaultTableModel modelo;
 
     public ProductoListaView(MensajeInternacionalizacionHandler mensajeHandler) {
+        super(mensajeHandler.get("producto.view.listar.titulo"), true, true, true, true);
         this.mensajeHandler = mensajeHandler;
 
+        // Monta el panel generado por el .form
         setContentPane(panelPrincipal);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setSize(600, 400);
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
-        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-        setSize(600, 400);
 
-        modelo = new DefaultTableModel(new Object[]{
-                mensajeHandler.get("producto.view.modificar.codigo"),
-                mensajeHandler.get("producto.view.modificar.nombre"),
-                mensajeHandler.get("producto.view.modificar.precio")
-        }, 0);
+        // Inicializa modelo y tabla
+        modelo = new DefaultTableModel();
         tblProductos.setModel(modelo);
 
+        // Carga textos y encabezados
         actualizarIdioma();
     }
 
     public void actualizarIdioma() {
         setTitle(mensajeHandler.get("producto.view.listar.titulo"));
+        lblNombre.setText(mensajeHandler.get("producto.view.listar.nombre") + ":");
         btnBuscar.setText(mensajeHandler.get("producto.view.listar.buscar"));
         btnListar.setText(mensajeHandler.get("producto.view.listar.listar"));
-        lblNombre.setText(mensajeHandler.get("producto.view.listar.nombre"));
 
         modelo.setColumnIdentifiers(new Object[]{
                 mensajeHandler.get("producto.view.modificar.codigo"),
@@ -52,44 +51,22 @@ public class ProductoListaView extends JInternalFrame {
         });
     }
 
-    public JTextField getTxtBuscar() {
-        return txtBuscar;
+    public String getTxtBuscar() {
+        return txtBuscar.getText().trim();
     }
 
-    public JButton getBtnBuscar() {
-        return btnBuscar;
-    }
-
-    public JTable getTblProductos() {
-        return tblProductos;
-    }
-
-    public JPanel getPanelPrincipal() {
-        return panelPrincipal;
-    }
-
-    public JButton getBtnListar() {
-        return btnListar;
-    }
-
-    public DefaultTableModel getModelo() {
-        return modelo;
-    }
-
-    public void setModelo(DefaultTableModel modelo) {
-        this.modelo = modelo;
-    }
+    public JButton getBtnBuscar() { return btnBuscar; }
+    public JButton getBtnListar() { return btnListar; }
+    public JTable getTblProductos() { return tblProductos; }
 
     public void cargarDatos(List<Producto> listaProductos) {
-        if (modelo != null) {
-            modelo.setRowCount(0); // Limpia la tabla
-            for (Producto producto : listaProductos) {
-                modelo.addRow(new Object[]{
-                        producto.getCodigo(),
-                        producto.getNombre(),
-                        producto.getPrecio()
-                });
-            }
+        modelo.setRowCount(0);
+        for (Producto p : listaProductos) {
+            modelo.addRow(new Object[]{
+                    p.getCodigo(),
+                    p.getNombre(),
+                    p.getPrecio()
+            });
         }
     }
 

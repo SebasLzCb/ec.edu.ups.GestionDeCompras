@@ -15,37 +15,35 @@ public class ProductoElimView extends JInternalFrame {
     private JComboBox<String> comboFiltro;
     private JTextField txtBusqueda;
     private JButton btnBuscar;
-    private JTable tablaResultado;
     private JButton btnEliminar;
+    private JTable tablaResultado;
     private DefaultTableModel modelResultado;
 
-    public ProductoElimView(ProductoDAO dao, MensajeInternacionalizacionHandler mensajeHandler) {
-        this.productoDAO = dao;
+    public ProductoElimView(ProductoDAO dao,
+                            MensajeInternacionalizacionHandler mensajeHandler) {
+        super(mensajeHandler.get("producto.view.eliminar.titulo"), true, true, true, true);
+        this.productoDAO    = dao;
         this.mensajeHandler = mensajeHandler;
 
+        // Monta el panel generado por el .form
         setContentPane(panelPrincipal);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setSize(600, 400);
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(600, 400);
 
-        comboFiltro.addItem(mensajeHandler.get("producto.view.eliminar.filtro.nombre"));
-        comboFiltro.addItem(mensajeHandler.get("producto.view.eliminar.filtro.codigo"));
-
-        modelResultado = new DefaultTableModel(new Object[]{
-                mensajeHandler.get("producto.view.modificar.codigo"),
-                mensajeHandler.get("producto.view.modificar.nombre"),
-                mensajeHandler.get("producto.view.modificar.precio")
-        }, 0);
+        // Inicializa modelo y tabla
+        modelResultado = new DefaultTableModel();
         tablaResultado.setModel(modelResultado);
 
+        // Carga textos y encabezados
         actualizarIdioma();
     }
 
     public void actualizarIdioma() {
         setTitle(mensajeHandler.get("producto.view.eliminar.titulo"));
-        btnBuscar.setText(mensajeHandler.get("producto.view.eliminar.buscar"));
+        btnBuscar .setText(mensajeHandler.get("producto.view.eliminar.buscar"));
         btnEliminar.setText(mensajeHandler.get("producto.view.eliminar.eliminar"));
 
         comboFiltro.removeAllItems();
@@ -53,12 +51,13 @@ public class ProductoElimView extends JInternalFrame {
         comboFiltro.addItem(mensajeHandler.get("producto.view.eliminar.filtro.codigo"));
 
         modelResultado.setColumnIdentifiers(new Object[]{
-                mensajeHandler.get("producto.view.modificar.codigo"),
-                mensajeHandler.get("producto.view.modificar.nombre"),
-                mensajeHandler.get("producto.view.modificar.precio")
+                mensajeHandler.get("producto.view.eliminar.codigo"),
+                mensajeHandler.get("producto.view.eliminar.nombre"),
+                mensajeHandler.get("producto.view.eliminar.precio")
         });
     }
 
+    // Getters para el controlador
     public JTable getTablaResultado() {
         return tablaResultado;
     }
@@ -81,10 +80,6 @@ public class ProductoElimView extends JInternalFrame {
 
     public DefaultTableModel getModelResultado() {
         return modelResultado;
-    }
-
-    public void setModelResultado(DefaultTableModel modelResultado) {
-        this.modelResultado = modelResultado;
     }
 
     public void mostrarMensaje(String mensaje) {
