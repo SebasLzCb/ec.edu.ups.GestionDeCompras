@@ -1,100 +1,90 @@
 package ec.edu.ups.vista.Usuario;
 
-import ec.edu.ups.modelo.Rol;
 import ec.edu.ups.util.MensajeInternacionalizacionHandler;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 
 public class UsuarioModView extends JInternalFrame {
 
-    private MensajeInternacionalizacionHandler mensajeHandler;
+    private final MensajeInternacionalizacionHandler mensajeHandler;
 
     private JPanel panelPrincipal;
+    private JLabel lblUsername;
     private JTextField txtUsername;
+    private JLabel lblPassword;
     private JPasswordField txtPassword;
     private JComboBox<String> cbxRol;
     private JButton btnBuscar;
+    private JTable tblUsuarios;
     private JButton btnActualizar;
     private JButton btnCancelar;
-    private JTable tblUsuarios;
-    private DefaultTableModel model;
     private JScrollPane scrollPane;
 
+    private DefaultTableModel model;
+
     public UsuarioModView(MensajeInternacionalizacionHandler mensajeHandler) {
+        super(mensajeHandler.get("usuario.view.modificar.titulo"), true, true, true, true);
         this.mensajeHandler = mensajeHandler;
 
         setContentPane(panelPrincipal);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setSize(600, 400);
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(600, 400);
 
-        model = new DefaultTableModel(new Object[]{"Username", "Rol"}, 0);
+        model = new DefaultTableModel();
         tblUsuarios.setModel(model);
+
+        actualizarIdioma();
     }
 
     public void actualizarIdioma() {
-        if (mensajeHandler == null) return;
-
         setTitle(mensajeHandler.get("usuario.view.modificar.titulo"));
 
-        if (btnBuscar != null) btnBuscar.setText(mensajeHandler.get("usuario.view.modificar.buscar"));
-        if (btnActualizar != null) btnActualizar.setText(mensajeHandler.get("usuario.view.modificar.actualizar"));
-        if (btnCancelar != null) btnCancelar.setText(mensajeHandler.get("usuario.view.modificar.cancelar"));
+        lblUsername.setText(mensajeHandler.get("usuario.view.modificar.username") + ":");
+        lblPassword.setText(mensajeHandler.get("usuario.view.modificar.password") + ":");
 
-        if (cbxRol != null) {
-            cbxRol.removeAllItems();
-            cbxRol.addItem("ADMINISTRADOR");
-            cbxRol.addItem("USUARIO");
-        }
+        btnBuscar    .setText(mensajeHandler.get("usuario.view.modificar.buscar"));
+        btnActualizar.setText(mensajeHandler.get("usuario.view.modificar.actualizar"));
+        btnCancelar  .setText(mensajeHandler.get("usuario.view.modificar.cancelar"));
+
+        cbxRol.removeAllItems();
+        cbxRol.addItem(mensajeHandler.get("usuario.view.modificar.rol.admin"));
+        cbxRol.addItem(mensajeHandler.get("usuario.view.modificar.rol.usuario"));
+
+        model.setColumnIdentifiers(new Object[]{
+            mensajeHandler.get("usuario.view.modificar.username"),
+            mensajeHandler.get("usuario.view.modificar.rol")
+        });
     }
 
-    public JTextField getTxtUsername() {
-        return txtUsername;
-    }
-
-    public JPasswordField getTxtPassword() {
-        return txtPassword;
-    }
-
-    public JComboBox<String> getCbxRol() {
-        return cbxRol;
-    }
-
-    public JButton getBtnBuscar() {
-        return btnBuscar;
-    }
-
-    public JButton getBtnActualizar() {
-        return btnActualizar;
-    }
-
-    public JButton getBtnCancelar() {
-        return btnCancelar;
-    }
-
-    public JTable getTableUsuarios() {
-        return tblUsuarios;
-    }
+    public String getTxtUsername()       { return txtUsername.getText().trim(); }
+    public String getTxtPassword()       { return new String(txtPassword.getPassword()); }
+    public JComboBox<String> getCbxRol() { return cbxRol; }
+    public JButton getBtnBuscar()        { return btnBuscar; }
+    public JButton getBtnActualizar()    { return btnActualizar; }
+    public JButton getBtnCancelar()      { return btnCancelar; }
+    public JTable getTblUsuarios()       { return tblUsuarios; }
 
     public DefaultTableModel getTableModel() {
         return model;
     }
 
-    public void setTableModel(DefaultTableModel model) {
-        this.model = model;
-        tblUsuarios.setModel(model);
+    public void limpiarCampos() {
+        txtUsername.setText("");
+        txtPassword.setText("");
+        if (cbxRol.getItemCount() > 0) cbxRol.setSelectedIndex(0);
     }
 
     public void mostrarMensaje(String mensaje) {
         JOptionPane.showMessageDialog(this, mensaje);
     }
 
-    public void limpiarCampos() {
-        txtUsername.setText("");
-        txtPassword.setText("");
-        cbxRol.setSelectedIndex(0);
+    private void createUIComponents() {
+        scrollPane = new JScrollPane();
     }
+
 }

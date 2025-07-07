@@ -12,6 +12,9 @@ public class ProductoModView extends JInternalFrame {
     private final MensajeInternacionalizacionHandler mensajeHandler;
 
     private JPanel panelPrincipal;
+    private JLabel lblCodigo;
+    private JLabel lblNombre;
+    private JLabel lblPrecio;
     private JTextField txtCodigo;
     private JTextField txtNombre;
     private JTextField txtPrecio;
@@ -20,34 +23,37 @@ public class ProductoModView extends JInternalFrame {
     private JButton btnCancelar;
     private JTable tblProductos;
     private DefaultTableModel modelo;
-    private JLabel lblCodigo;
-    private JLabel lblNombre;
-    private JLabel lblPrecio;
 
     public ProductoModView(MensajeInternacionalizacionHandler mensajeHandler) {
+        super(mensajeHandler.get("producto.view.modificar.titulo"), true, true, true, true);
         this.mensajeHandler = mensajeHandler;
 
+        // Monta el panel generado por el .form
         setContentPane(panelPrincipal);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setSize(600, 400);
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(600, 400);
 
-        // Inicializar modelo desde la tabla (JTable ya configurada en el .form)
-        modelo = (DefaultTableModel) tblProductos.getModel();
+        // Inicializa modelo para la tabla
+        modelo = new DefaultTableModel();
+        tblProductos.setModel(modelo);
 
+        // Carga textos y encabezados según idioma
         actualizarIdioma();
     }
 
     public void actualizarIdioma() {
         setTitle(mensajeHandler.get("producto.view.modificar.titulo"));
-        lblCodigo.setText(mensajeHandler.get("producto.view.modificar.codigo"));
-        lblNombre.setText(mensajeHandler.get("producto.view.modificar.nombre"));
-        lblPrecio.setText(mensajeHandler.get("producto.view.modificar.precio"));
-        btnBuscar.setText(mensajeHandler.get("producto.view.modificar.buscar"));
+
+        lblCodigo    .setText(mensajeHandler.get("producto.view.modificar.codigo") + ":");
+        lblNombre    .setText(mensajeHandler.get("producto.view.modificar.nombre") + ":");
+        lblPrecio    .setText(mensajeHandler.get("producto.view.modificar.precio") + ":");
+
+        btnBuscar    .setText(mensajeHandler.get("producto.view.modificar.buscar"));
         btnActualizar.setText(mensajeHandler.get("producto.view.modificar.actualizar"));
-        btnCancelar.setText(mensajeHandler.get("producto.view.modificar.cancelar"));
+        btnCancelar  .setText(mensajeHandler.get("producto.view.modificar.cancelar"));
 
         modelo.setColumnIdentifiers(new Object[]{
                 mensajeHandler.get("producto.view.modificar.codigo"),
@@ -56,42 +62,20 @@ public class ProductoModView extends JInternalFrame {
         });
     }
 
-    public JTextField getTxtCodigo() {
-        return txtCodigo;
-    }
-
-    public JTextField getTxtNombre() {
-        return txtNombre;
-    }
-
-    public JTextField getTxtPrecio() {
-        return txtPrecio;
-    }
-
-    public JButton getBtnBuscar() {
-        return btnBuscar;
-    }
-
-    public JButton getBtnActualizar() {
-        return btnActualizar;
-    }
-
-    public JButton getBtnCancelar() {
-        return btnCancelar;
-    }
-
-    public JTable getTableProductos() {
-        return tblProductos;
-    }
-
-    public DefaultTableModel getTableModel() {
-        return modelo;
-    }
+    public String getTxtCodigo()    { return txtCodigo.getText().trim(); }
+    public JButton getBtnBuscar()   { return btnBuscar; }
+    public JButton getBtnActualizar(){ return btnActualizar; }
+    public JButton getBtnCancelar() { return btnCancelar; }
+    public JTable getTblProductos() { return tblProductos; }
 
     public void listarProductos(List<Producto> productos) {
         modelo.setRowCount(0);
         for (Producto p : productos) {
-            modelo.addRow(new Object[]{p.getCodigo(), p.getNombre(), p.getPrecio()});
+            modelo.addRow(new Object[]{
+                    p.getCodigo(),
+                    p.getNombre(),
+                    p.getPrecio()
+            });
         }
     }
 
