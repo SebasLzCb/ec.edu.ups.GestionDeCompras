@@ -12,6 +12,7 @@ public class CarritoDAOMemoria implements CarritoDAO {
 
     @Override
     public void crear(Carrito carrito) {
+        System.out.println("GUARDANDO carrito con código: " + carrito.getCodigo());
         carritos.add(carrito);
     }
 

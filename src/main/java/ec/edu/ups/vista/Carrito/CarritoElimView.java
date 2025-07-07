@@ -5,48 +5,36 @@ import ec.edu.ups.util.MensajeInternacionalizacionHandler;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 
 public class CarritoElimView extends JInternalFrame {
 
-    private MensajeInternacionalizacionHandler mensajeHandler;
-
-    private JTextField txtCodigo;
-    private JTable table1;
-    private JButton btnBuscar;
-    private JButton btnEliminar;
+    private final MensajeInternacionalizacionHandler mensajeHandler;
+    private JPanel panelPrincipal;
     private JLabel lblCodigo;
-
+    private JTextField txtCodigo;
+    private JButton btnBuscar, btnEliminar;
+    private JTable table1;
     private DefaultTableModel modeloTabla;
 
     public CarritoElimView(MensajeInternacionalizacionHandler mensajeHandler) {
+        super(mensajeHandler.get("carrito.view.eliminar.titulo"), true, true, true, true);
         this.mensajeHandler = mensajeHandler;
 
-        setTitle(mensajeHandler.get("carrito.view.eliminar.titulo"));
+        // Monta el panel del .form
+        setContentPane(panelPrincipal);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setSize(500, 300);
         setClosable(true);
         setIconifiable(true);
-        setMaximizable(true);
         setResizable(true);
-        setSize(500, 300);
-        setLayout(new BorderLayout());
 
-        JPanel panelSuperior = new JPanel(new FlowLayout());
-        txtCodigo = new JTextField(15);
-        btnBuscar = new JButton();
-        btnEliminar = new JButton();
-        lblCodigo = new JLabel();
+        // Inicializa el modelo de la tabla y la enlaza
+        modeloTabla = new DefaultTableModel();
+        table1.setModel(modeloTabla);
 
-        panelSuperior.add(lblCodigo);
-        panelSuperior.add(txtCodigo);
-        panelSuperior.add(btnBuscar);
-        panelSuperior.add(btnEliminar);
+        // Inicializa combo, labels, etc. si aplica (aquí solo campo de texto)
 
-        modeloTabla = new DefaultTableModel(new Object[]{"Código", "Usuario", "Total"}, 0);
-        table1 = new JTable(modeloTabla);
-
-        add(panelSuperior, BorderLayout.NORTH);
-        add(new JScrollPane(table1), BorderLayout.CENTER);
-
+        // Carga los textos y encabezados
         actualizarIdioma();
     }
 
@@ -55,11 +43,10 @@ public class CarritoElimView extends JInternalFrame {
         lblCodigo.setText(mensajeHandler.get("carrito.view.eliminar.codigo") + ":");
         btnBuscar.setText(mensajeHandler.get("carrito.view.eliminar.buscar"));
         btnEliminar.setText(mensajeHandler.get("carrito.view.eliminar.eliminar"));
-
         modeloTabla.setColumnIdentifiers(new Object[]{
                 mensajeHandler.get("carrito.view.eliminar.codigo"),
-                "Usuario",  // puedes internacionalizar si lo deseas
-                "Total"     // idem
+                mensajeHandler.get("carrito.view.eliminar.usuario"),
+                mensajeHandler.get("carrito.view.eliminar.total")
         });
     }
 
@@ -76,12 +63,8 @@ public class CarritoElimView extends JInternalFrame {
                     carrito.calcularTotal()
             });
         } else {
-            mostrarMensaje(mensajeHandler.get("carrito.no.encontrado"));
+            JOptionPane.showMessageDialog(this, mensajeHandler.get("carrito.no.encontrado"));
         }
-    }
-
-    public void mostrarMensaje(String mensaje) {
-        JOptionPane.showMessageDialog(this, mensaje);
     }
 
     public void limpiarCampos() {
@@ -89,11 +72,10 @@ public class CarritoElimView extends JInternalFrame {
         modeloTabla.setRowCount(0);
     }
 
-    public JButton getBtnBuscar() {
-        return btnBuscar;
-    }
+    public JButton getBtnBuscar() { return btnBuscar; }
+    public JButton getBtnEliminar() { return btnEliminar; }
 
-    public JButton getBtnEliminar() {
-        return btnEliminar;
+    public void mostrarMensaje(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje);
     }
 }

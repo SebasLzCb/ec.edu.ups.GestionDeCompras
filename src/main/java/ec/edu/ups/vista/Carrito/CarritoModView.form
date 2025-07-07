@@ -8,7 +8,7 @@
     <properties/>
     <border type="none" title=""/>
     <children>
-      <component id="d894d" class="javax.swing.JLabel">
+      <component id="d894d" class="javax.swing.JLabel" binding="lblCodigo">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -32,7 +32,7 @@
           <text value="Buscar"/>
         </properties>
       </component>
-      <component id="4894e" class="javax.swing.JLabel">
+      <component id="4894e" class="javax.swing.JLabel" binding="lblTotal">
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
