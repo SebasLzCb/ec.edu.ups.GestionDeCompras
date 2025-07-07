@@ -4,32 +4,38 @@ import ec.edu.ups.util.MensajeInternacionalizacionHandler;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.util.List;
 
 public class UsuarioListaView extends JInternalFrame {
 
-    private MensajeInternacionalizacionHandler mensajeHandler;
+    private final MensajeInternacionalizacionHandler mensajeHandler;
 
     private JPanel panelPrincipal;
-    private JTable tblUsuario;
-    private DefaultTableModel model;
+    private JComboBox<String> cbxFiltro;
     private JTextField txtBuscar;
     private JButton btnBuscar;
     private JButton btnRefrescar;
-    private JComboBox<String> cbxFiltro;
+    private JTable tblUsuario;
+    private DefaultTableModel model;
 
     public UsuarioListaView(MensajeInternacionalizacionHandler mensajeHandler) {
+        super(mensajeHandler.get("usuario.view.listar.titulo"), true, true, true, true);
         this.mensajeHandler = mensajeHandler;
 
+        // Montar UI
         setContentPane(panelPrincipal);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setSize(600, 400);
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(600, 400);
 
-        model = new DefaultTableModel(new Object[]{"Username", "Rol"}, 0);
+        // Inicializar modelo y tabla
+        model = new DefaultTableModel();
         tblUsuario.setModel(model);
 
+        // Cargar textos y encabezados
         actualizarIdioma();
     }
 
@@ -41,14 +47,20 @@ public class UsuarioListaView extends JInternalFrame {
         cbxFiltro.removeAllItems();
         cbxFiltro.addItem(mensajeHandler.get("usuario.view.eliminar.filtro.username"));
         cbxFiltro.addItem(mensajeHandler.get("usuario.view.eliminar.filtro.rol"));
+
+        model.setColumnIdentifiers(new Object[]{
+                mensajeHandler.get("usuario.view.listar.col_username"),
+                mensajeHandler.get("usuario.view.listar.col_rol"),
+                mensajeHandler.get("usuario.view.listar.col_fecha")
+        });
     }
 
-    public JComboBox<String> getComboFiltro() {
-        return cbxFiltro;
+    public int getFiltroIndex() {
+        return cbxFiltro.getSelectedIndex();
     }
 
-    public JTextField getTxtBuscar() {
-        return txtBuscar;
+    public String getTxtBuscar() {
+        return txtBuscar.getText().trim();
     }
 
     public JButton getBtnBuscar() {
@@ -59,21 +71,16 @@ public class UsuarioListaView extends JInternalFrame {
         return btnRefrescar;
     }
 
-    public JTable getTableUsuarios() {
+    public JTable getTblUsuario() {
         return tblUsuario;
     }
 
-    public DefaultTableModel getTableModel() {
-        return model;
-    }
-
-    public void setTableModel(DefaultTableModel model) {
-        this.model = model;
-        tblUsuario.setModel(model);
-    }
-
-    public JPanel getPanel() {
-        return panelPrincipal;
+    public void cargarUsuarios(List<?> usuarios) {
+        model.setRowCount(0);
+        for (Object u : usuarios) {
+            // Suponiendo que u tiene getUsername(), getRol(), getFechaRegistro()
+            // Ajustar según modelo Usuario
+        }
     }
 
     public void mostrarMensaje(String mensaje) {

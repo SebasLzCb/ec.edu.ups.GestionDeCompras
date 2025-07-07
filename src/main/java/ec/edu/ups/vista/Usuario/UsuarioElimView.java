@@ -7,72 +7,73 @@ import javax.swing.table.DefaultTableModel;
 
 public class UsuarioElimView extends JInternalFrame {
 
-    private MensajeInternacionalizacionHandler mensajeHandler;
+    private final MensajeInternacionalizacionHandler mensajeHandler;
 
     private JPanel panelPrincipal;
     private JComboBox<String> cbxFiltro;
     private JTextField txtBuscar;
     private JButton btnBuscar;
-    private JTable tblUsuarios;
     private JButton btnEliminar;
+    private JTable tblUsuarios;
     private DefaultTableModel model;
 
     public UsuarioElimView(MensajeInternacionalizacionHandler mensajeHandler) {
+        super(mensajeHandler.get("usuario.view.eliminar.titulo"), true, true, true, true);
         this.mensajeHandler = mensajeHandler;
 
+        // Monta el panel generado por el .form
         setContentPane(panelPrincipal);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setSize(600, 400);
         setClosable(true);
         setIconifiable(true);
         setResizable(true);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(600, 400);
 
-        model = new DefaultTableModel(new Object[]{"Username", "Rol"}, 0);
+        // Inicializa modelo y tabla
+        model = new DefaultTableModel();
         tblUsuarios.setModel(model);
 
+        // Carga textos según el idioma actual
         actualizarIdioma();
     }
 
     public void actualizarIdioma() {
         setTitle(mensajeHandler.get("usuario.view.eliminar.titulo"));
-        btnBuscar.setText(mensajeHandler.get("usuario.view.eliminar.buscar"));
+        btnBuscar .setText(mensajeHandler.get("usuario.view.eliminar.buscar"));
         btnEliminar.setText(mensajeHandler.get("usuario.view.eliminar.eliminar"));
 
         cbxFiltro.removeAllItems();
         cbxFiltro.addItem(mensajeHandler.get("usuario.view.eliminar.filtro.username"));
         cbxFiltro.addItem(mensajeHandler.get("usuario.view.eliminar.filtro.rol"));
-    }
 
-    public JTable getTableUsuarios() {
-        return tblUsuarios;
-    }
-
-    public DefaultTableModel getTableModel() {
-        return model;
-    }
-
-    public JButton getBtnEliminar() {
-        return btnEliminar;
+        model.setColumnIdentifiers(new Object[]{
+                mensajeHandler.get("usuario.view.eliminar.col_username"),
+                mensajeHandler.get("usuario.view.eliminar.col_rol")
+        });
     }
 
     public JComboBox<String> getCbxFiltro() {
         return cbxFiltro;
     }
 
-    public JTextField getTxtBuscar() {
-        return txtBuscar;
+    public String getTxtBuscar() {
+        return txtBuscar.getText().trim();
     }
 
     public JButton getBtnBuscar() {
         return btnBuscar;
     }
 
-    public JPanel getPanelPrincipal() {
-        return panelPrincipal;
+    public JButton getBtnEliminar() {
+        return btnEliminar;
     }
 
-    public void setTableModel(DefaultTableModel model) {
-        this.model = model;
+    public JTable getTblUsuarios() {
+        return tblUsuarios;
+    }
+
+    public DefaultTableModel getModel() {
+        return model;
     }
 
     public void mostrarMensaje(String mensaje) {

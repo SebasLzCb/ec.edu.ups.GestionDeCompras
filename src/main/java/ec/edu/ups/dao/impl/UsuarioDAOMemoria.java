@@ -4,6 +4,7 @@ import ec.edu.ups.dao.UsuarioDAO;
 import ec.edu.ups.modelo.Rol;
 import ec.edu.ups.modelo.Usuario;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -14,7 +15,9 @@ public class UsuarioDAOMemoria implements UsuarioDAO {
 
     public UsuarioDAOMemoria() {
         usuarios = new ArrayList<Usuario>();
-        crear(new Usuario("admin", "12345", Rol.ADMINISTRADOR));
+        crear(new Usuario("admin", "12345", Rol.ADMINISTRADOR,
+                "Administrador General", LocalDate.of(1990,1,1),
+                "admin@ejemplo.com", "0999999999"));
         crear(new Usuario("user", "12345", Rol.USUARIO));
     }
 
@@ -80,7 +83,6 @@ public class UsuarioDAOMemoria implements UsuarioDAO {
                 usuariosEncontrados.add(usuario);
             }
         }
-
         return usuariosEncontrados;
     }
 }
