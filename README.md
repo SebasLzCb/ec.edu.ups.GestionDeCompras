@@ -1,48 +1,159 @@
-# 🛒 Proyecto de Ejemplo - Carrito de Compras
+# 🛒 Proyecto de Ejemplo – Carrito de Compras
 
-Este proyecto fue desarrollado como parte del **período 66** de la asignatura **Programación Orientada a Objetos** en la Universidad Politécnica Salesiana.  
-Su objetivo principal es demostrar el uso de **patrones de diseño** aplicados a una aplicación Java con interfaz gráfica construida con **Swing**.
+**Autor:** Sebastian Israel Loza Carbo  
 
----
+**Fecha:** 2025-07-07
 
-## 🎯 Objetivo del proyecto
+**Carrera:** Ingenieria en Ciencias de la Computación
 
-Implementar un sistema educativo que simula un **carrito de compras**, utilizando buenas prácticas de diseño y una arquitectura desacoplada basada en **MVC** (Modelo-Vista-Controlador), **DAO** (Data Access Object) y principios de **POO** y **SOLID**.
+**Materia:** Programación Orientada a Objetos
 
----
 
-## 🛠️ Tecnologías utilizadas
-
-- 💻 **Java 21**
-- 🧰 **IntelliJ IDEA** (recomendado con el plugin de diseñador gráfico de interfaces Swing)
-- ☕ **Swing** para la interfaz gráfica
-- 📦 Estructura modular basada en paquetes: `modelo`, `dao`, `controlador`, `vista`, y `servicio`
+Este proyecto fue desarrollado como parte del **Periodo 66** de la asignatura **Programación Orientada a Objetos** en la Universidad Politécnica Salesiana.  
+Su objetivo principal es demostrar el uso de **patrones de diseño** en una aplicación Java con interfaz gráfica Swing.
 
 ---
 
-## 🧱 Patrones de Diseño aplicados
+## 🎯 Objetivo
 
-- **MVC (Modelo - Vista - Controlador)**  
-  Para separar la lógica de negocio de la interfaz gráfica.
+Implementar un sistema de carrito de compras que permita a los usuarios:
 
-- **DAO (Data Access Object)**  
-  Para desacoplar el acceso a los datos, facilitando la migración a diferentes fuentes (archivos, base de datos, etc.).
+- Registrar y autenticar usuarios.
+- Crear, buscar, actualizar y eliminar productos.
+- Armar, modificar, listar y eliminar carritos de compra.
+- Recuperar contraseña mediante preguntas de seguridad.
+- Cambiar dinámicamente el idioma de la interfaz (español, inglés, francés).
 
-- **SRP y DIP** de los principios **SOLID**  
-  Para asegurar una arquitectura mantenible, extensible y fácil de testear.
+Se sigue una arquitectura **desacoplada** basada en:
+- **MVC** (Modelo–Vista–Controlador)
+- **DAO** (Data Access Object)
+- Principios **SOLID** (SRP, DIP…)
 
 ---
 
+## 🛠️ Tecnologías
 
-## 📚 Recomendaciones
+- **Java 21**
+- **Swing** (javax.swing) para UI
+- **IntelliJ IDEA** + plugin de diseñador de formularios
+- **Maven** o **Gradle** (según configuración)
 
-- Ejecutar el proyecto desde `Main.java`
-- Usar IntelliJ IDEA para aprovechar el editor visual de formularios `.form`
-- Probar con diferentes implementaciones del DAO para observar la flexibilidad del patrón
+---
+
+## 🧱 Patrones de Diseño
+
+- **MVC** para separar presentación, lógica de negocio y datos.
+- **DAO** para abstraer el acceso a datos en memoria y facilitar migración a BD.
+- **Singleton**, **Factory** y **Strategy** (implícitos en el manejo de internacionalización).
+- Principios **SOLID** (SRP, OCP, LSP, ISP, DIP).
+
+---
+
+## 📂 Estructura de Carpetas
+```
+GestionDeCompras/
+├── src/
+│   └── main/
+│       ├── java/
+│       │   └── ec/
+│       │       └── edu/
+│       │           └── ups/
+│       │               ├── Main.java
+│       │               ├── controlador/
+│       │               │   ├── CarritoController.java
+│       │               │   ├── ProductoController.java
+│       │               │   ├── RecuperacionController.java
+│       │               │   └── UsuarioController.java
+│       │               ├── dao/
+│       │               │   ├── CarritoDAO.java
+│       │               │   ├── ProductoDAO.java
+│       │               │   ├── RecuperacionDAO.java
+│       │               │   ├── UsuarioDAO.java
+│       │               │   └── impl/
+│       │               │       ├── CarritoDAOMemoria.java
+│       │               │       ├── ProductoDAOMemoria.java
+│       │               │       ├── RecuperacionDAOMemoria.java
+│       │               │       └── UsuarioDAOMemoria.java
+│       │               ├── modelo/
+│       │               │   ├── Carrito.java
+│       │               │   ├── ItemCarrito.java
+│       │               │   ├── Pregunta.java
+│       │               │   ├── Producto.java
+│       │               │   ├── Respuesta.java
+│       │               │   ├── Rol.java
+│       │               │   └── Usuario.java
+│       │               ├── util/
+│       │               │   ├── FormateadorUtils.java
+│       │               │   └── MensajeInternacionalizacionHandler.java
+│       │               └── vista/
+│       │                   ├── Carrito/
+│       │                   │   ├── CarritoAñadirView.java
+│       │                   │   ├── CarritoDetallesView.java
+│       │                   │   ├── CarritoElimView.java
+│       │                   │   ├── CarritoListaView.java
+│       │                   │   └── CarritoModView.java
+│       │                   ├── InicioDeSesion/
+│       │                   │   ├── CambiarContraseñaView.java
+│       │                   │   ├── LoginView.java
+│       │                   │   ├── RecuperarContraseñaView.java
+│       │                   │   └── RegistroView.java
+│       │                   ├── Producto/
+│       │                   │   ├── ProductoAñadirView.java
+│       │                   │   ├── ProductoElimView.java
+│       │                   │   ├── ProductoListaView.java
+│       │                   │   └── ProductoModView.java
+│       │                   ├── Usuario/
+│       │                   │   ├── UsuarioElimView.java
+│       │                   │   ├── UsuarioListaView.java
+│       │                   │   ├── UsuarioModView.java
+│       │                   │   └── UsuarioRegistroView.java
+│       │                   ├── MiJDesktopPane.java
+│       │                   └── Principal.java
+│       └── resources/
+│           └── mensajes/
+│               ├── mensajes_es_EC.properties
+│               ├── mensajes_en_US.properties
+│               └── mensajes_fr_FR.properties
+└── .idea/
+```
+---
+
+## 📖 Cómo ejecutar
+
+1. **Clonar** el repositorio.
+2. Importar en IntelliJ IDEA (como proyecto Maven/Gradle).
+3. Ejecutar la clase `ec.edu.ups.Main`.
+4. Iniciar sesión con un usuario creado o registrar uno nuevo.
+5. Explorar menús de **Producto**, **Carrito** y **Usuario** en la ventana principal.
+
+---
+
+## 📊 Diagramas UML
+
+![img_2.png](img_2.png)
+*Diagrama de clases: muestra entidades, relaciones y métodos principales.*
+
+![img_4.png](img_4.png)
+*Diagrama de secuencia: flujo de creación de carrito de compras.*
+
+---
+## Link de repositorio
+
+https://github.com/SebasLzCb/ec.edu.ups.GestionDeCompras.git
+
+---
+
+## 💡 Recomendaciones
+
+- Pruebas con distintos idiomas para ver la internacionalización.
+- Sustituir las implementaciones en memoria por DAO que usen JDBC o JPA.
+- Añadir validaciones adicionales en formularios (formato de correo, longitud de campos).
+- Integrar pruebas unitarias con JUnit para DAO y lógica de negocio.
 
 ---
 
 ## © Créditos
 
-Desarrollado como parte de la práctica académica en **Programación Orientada a Objetos – Periodo 66**.
-
+Universidad Politécnica Salesiana – **Programación Orientada a Objetos** (Periodo 66)  
+Desarrollado por: Sebastian Israel Loza Carbo  
+2025 – https://ups.edu.ec  
