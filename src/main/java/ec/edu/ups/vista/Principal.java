@@ -147,12 +147,14 @@ public class Principal extends JFrame {
         menuItemEliminarProducto.setEnabled(false);
         menuItemActualizarProducto.setEnabled(false);
         menuItemBuscarProducto.setEnabled(false);
-        menuItemCrearCarrito.setEnabled(false);
+        menuItemCrearCarrito.setEnabled(true);
+        menuItemBuscarCarrito.setEnabled(false);
         menuItemModificarCarrito.setEnabled(false);
         menuItemVerDetallesCarrito.setEnabled(false);
         menuItemEliminarCarrito.setEnabled(false);
         menuItemRegistrarUsuario.setEnabled(false);
-        menuItemModificarUsuario.setEnabled(false);
+        menuItemListarUsuarios.setEnabled(false);
+        menuItemModificarUsuario.setEnabled(true);
         menuItemEliminarUsuario.setEnabled(false);
     }
 

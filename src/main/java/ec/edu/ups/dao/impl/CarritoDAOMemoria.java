@@ -8,7 +8,11 @@ import java.util.List;
 
 public class CarritoDAOMemoria implements CarritoDAO {
 
-    private final List<Carrito> carritos = new ArrayList<>();
+    private final List<Carrito> carritos;
+
+    public CarritoDAOMemoria() {
+        this.carritos = new ArrayList<>();
+    }
 
     @Override
     public void crear(Carrito carrito) {

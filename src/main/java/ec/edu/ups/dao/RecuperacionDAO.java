@@ -2,6 +2,7 @@ package ec.edu.ups.dao;
 
 import ec.edu.ups.modelo.Pregunta;
 import ec.edu.ups.modelo.Respuesta;
+import ec.edu.ups.modelo.Usuario; // Se importa Usuario
 
 import java.util.List;
 
@@ -15,7 +16,8 @@ public interface RecuperacionDAO {
 
     List<String> getPreguntasUsuario(String username);
 
-    void guardarRespuestas(String username, String[] preguntas, String[] respuestas);
+    // CORREGIDO: Ahora recibe un objeto Usuario
+    void guardarRespuestas(Usuario usuario, String[] preguntas, String[] respuestas);
 
     List<Respuesta> getRespuestasUsuario(String user);
 

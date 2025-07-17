@@ -1,22 +1,28 @@
 package ec.edu.ups.dao.impl;
 
 import ec.edu.ups.dao.RecuperacionDAO;
+import ec.edu.ups.dao.UsuarioDAO;
 import ec.edu.ups.modelo.Pregunta;
 import ec.edu.ups.modelo.Respuesta;
+import ec.edu.ups.modelo.Usuario; // Se importa Usuario
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 public class RecuperacionDAOMemoria implements RecuperacionDAO {
 
-    private final List<Pregunta> bancoPreguntas = new ArrayList<>();
-    private final List<String[]> datosRecuperacion = new ArrayList<>();
-    private final List<Respuesta> respuestas = new ArrayList<>();
+    private final List<Pregunta> bancoPreguntas;
+    private final List<String[]> datosRecuperacion;
+    private final List<Respuesta> respuestas;
+    private final UsuarioDAO usuarioDAO;
 
-    public RecuperacionDAOMemoria() {
+    public RecuperacionDAOMemoria(UsuarioDAO usuarioDAO) {
+        this.usuarioDAO = usuarioDAO;
+        this.bancoPreguntas = new ArrayList<>();
+        this.datosRecuperacion = new ArrayList<>();
+        this.respuestas = new ArrayList<>();
         inicializarBancoPreguntas();
         cargarRespuestasIniciales();
     }
@@ -35,18 +41,20 @@ public class RecuperacionDAOMemoria implements RecuperacionDAO {
     }
 
     private void cargarRespuestasIniciales() {
-        String username = "admin";
-        String[] preguntasAdmin = {
-                "¿Cuál es tu equipo favorito?",
-                "¿Nombre de tu primera mascota?",
-                "¿Ciudad donde naciste?"
-        };
-        String[] respuestasAdmin = {
-                "Ecuador",
-                "Firulais",
-                "Quito"
-        };
-        guardarRespuestas(username, preguntasAdmin, respuestasAdmin);
+        Usuario admin = usuarioDAO.buscarPorUsername("admin");
+        if (admin != null) {
+            String[] preguntasAdmin = {
+                    "¿Cuál es tu equipo favorito?",
+                    "¿Nombre de tu primera mascota?",
+                    "¿Ciudad donde naciste?"
+            };
+            String[] respuestasAdmin = {
+                    "Ecuador",
+                    "Firulais",
+                    "Quito"
+            };
+            guardarRespuestas(admin, preguntasAdmin, respuestasAdmin);
+        }
     }
 
     @Override
@@ -58,7 +66,7 @@ public class RecuperacionDAOMemoria implements RecuperacionDAO {
     public List<Respuesta> getRespuestasUsuario(String user) {
         List<Respuesta> resultado = new ArrayList<>();
         for (Respuesta r : respuestas) {
-            if (r.getUsername().equals(user)) {
+            if (r.getUsuario().getUsername().equals(user)) {
                 resultado.add(r);
             }
         }
@@ -67,7 +75,7 @@ public class RecuperacionDAOMemoria implements RecuperacionDAO {
 
     @Override
     public boolean validarRespuesta(Respuesta r) {
-        return getRespuestasUsuario(r.getUsername()).stream()
+        return getRespuestasUsuario(r.getUsuario().getUsername()).stream()
                 .anyMatch(alm -> alm.getPregunta().getId() == r.getPregunta().getId()
                         && alm.getRespuesta().equalsIgnoreCase(r.getRespuesta()));
     }
@@ -109,10 +117,12 @@ public class RecuperacionDAOMemoria implements RecuperacionDAO {
     }
 
     @Override
-    public void guardarRespuestas(String username, String[] preg, String[] resp) {
-        // 1) Elimina respuestas previas del usuario:
+    // CORREGIDO: El método ahora usa el objeto Usuario para obtener el username
+    public void guardarRespuestas(Usuario usuario, String[] preg, String[] resp) {
+        String username = usuario.getUsername();
+
         datosRecuperacion.removeIf(entry -> entry[0].equals(username));
-        respuestas.removeIf(r -> r.getUsername().equals(username));
+        respuestas.removeIf(r -> r.getUsuario().getUsername().equals(username));
 
         String[] nuevo = new String[1 + 3 * 2];
         nuevo[0] = username;
@@ -129,7 +139,7 @@ public class RecuperacionDAOMemoria implements RecuperacionDAO {
                     .findFirst()
                     .orElse(null);
             if (preguntaObj != null) {
-                respuestas.add(new Respuesta(username, preguntaObj, resp[i]));
+                respuestas.add(new Respuesta(usuario, preguntaObj, resp[i]));
             }
         }
     }

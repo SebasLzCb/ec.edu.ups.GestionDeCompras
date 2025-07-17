@@ -1,22 +1,22 @@
 package ec.edu.ups.modelo;
 
 public class Respuesta {
-    private String username;
+    private Usuario usuario;
     private Pregunta pregunta;
     private String respuesta;
 
-    public Respuesta(String username, Pregunta pregunta, String respuesta) {
-        this.username = username;
+    public Respuesta(Usuario usuario, Pregunta pregunta, String respuesta) {
+        this.usuario = usuario;
         this.pregunta = pregunta;
         this.respuesta = respuesta;
     }
 
-    public String getUsername() {
-        return username;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public Pregunta getPregunta() {

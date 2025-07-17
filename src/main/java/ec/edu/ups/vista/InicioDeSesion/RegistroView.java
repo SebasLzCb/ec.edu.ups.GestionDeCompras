@@ -59,7 +59,6 @@ public class RegistroView extends JFrame {
         btnCancelar.setText(mensajeHandler.get("usuario.view.registrar.cancelar"));
     }
 
-    // getters...
     public String getTxtUsuario() { return txtUsuario.getText().trim(); }
     public String getTxtPassword() { return new String(txtPassword.getPassword()); }
     public JComboBox<String> getCbxPregunta1() { return cbxPregunta1; }

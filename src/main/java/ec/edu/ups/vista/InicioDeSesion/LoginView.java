@@ -5,11 +5,12 @@ import ec.edu.ups.util.MensajeInternacionalizacionHandler;
 import ec.edu.ups.vista.Principal;
 
 import javax.swing.*;
+import java.util.List;
 
 public class LoginView extends JFrame {
     private final MensajeInternacionalizacionHandler mensajeHandler;
     private final RecuperacionController recuperacionController;
-    private RegistroView registroFrame;
+    private RegistroView registroFrame; // Este es el JFrame de registro
     private Principal principal;
 
     private JPanel panelPrincipal;
@@ -70,27 +71,34 @@ public class LoginView extends JFrame {
             recuperacionController.mostrarRecuperar(user);
         });
 
+        // CORREGIDO: Este listener prepara y muestra el JFrame de registro.
         btnRegistrarse.addActionListener(e -> {
             if (registroFrame != null) {
-                registroFrame.setPreguntas(
-                        recuperacionController.obtenerPreguntasLocalizadas()
-                );
+                // 1. Obtiene las preguntas localizadas
+                List<String> preguntas = recuperacionController.obtenerPreguntasLocalizadas();
+                // 2. Las establece en la vista de registro
+                registroFrame.setPreguntas(preguntas);
+                // 3. Limpia los campos y la hace visible
                 registroFrame.limpiarCampos();
-                registroFrame.actualizarIdioma();
                 registroFrame.setVisible(true);
             } else {
-                mostrarMensaje("Error: RegistroView no inyectado.");
+                mostrarMensaje("Error: La ventana de registro (JFrame) no fue inicializada.");
             }
         });
 
-        btnIniciarSesion.addActionListener(e -> {
-        });
+        // Este listener lo gestionará el UsuarioController
+        // btnIniciarSesion.addActionListener(e -> {});
 
         actualizarIdioma();
     }
 
     public void setRegistroFrame(RegistroView registroFrame) {
         this.registroFrame = registroFrame;
+    }
+
+    // Getter para que el UsuarioController pueda acceder al JFrame de registro
+    public RegistroView getRegistroFrame() {
+        return registroFrame;
     }
 
     public void setPrincipal(Principal principal) {

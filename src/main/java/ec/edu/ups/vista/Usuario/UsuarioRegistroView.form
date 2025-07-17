@@ -198,7 +198,7 @@
         </constraints>
         <properties/>
       </component>
-      <component id="eefb0" class="javax.swing.JLabel">
+      <component id="eefb0" class="javax.swing.JLabel" binding="lblDia">
         <constraints>
           <grid row="3" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -206,7 +206,7 @@
           <text value="Día :"/>
         </properties>
       </component>
-      <component id="e3511" class="javax.swing.JLabel">
+      <component id="e3511" class="javax.swing.JLabel" binding="lblMes">
         <constraints>
           <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -214,7 +214,7 @@
           <text value="Mes :"/>
         </properties>
       </component>
-      <component id="657b" class="javax.swing.JLabel">
+      <component id="657b" class="javax.swing.JLabel" binding="lblAño">
         <constraints>
           <grid row="3" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>

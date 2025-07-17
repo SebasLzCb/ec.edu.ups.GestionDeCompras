@@ -31,9 +31,9 @@ public class RecuperacionController {
         this.mensajeHandler  = mensajeHandler;
     }
 
-    public RecuperacionController(RecuperacionDAO recuperacionDAO,
-                                  MensajeInternacionalizacionHandler mensajeHandler) {
-        this(recuperacionDAO, null, mensajeHandler);
+    // Getter para el DAO, útil para el controlador de usuario
+    public RecuperacionDAO getRecuperacionDAO() {
+        return this.recuperacionDAO;
     }
 
     public void setLoginView(LoginView loginView) {
@@ -43,22 +43,19 @@ public class RecuperacionController {
     public void setRecuperarView(RecuperarContraseñaView recuperarView) {
         this.recuperarView = recuperarView;
 
-        // BOTÓN “Siguiente”
         recuperarView.getBtnSiguiente().addActionListener(e -> {
             String usr       = recuperarView.getTxtUsuario().getText().trim();
             String pregunta  = recuperarView.getPreguntas()[0];
             String respuesta = recuperarView.getRespuestas()[0];
 
             if (recuperacionDAO.validar(usr, pregunta, respuesta)) {
-                // buscamos el usuario real (o uno dummy)
-                Usuario u = (usuarioDAO != null)
-                        ? usuarioDAO.buscarPorUsername(usr)
-                        : new Usuario();
-
-                CambiarContraseñaView cv = new CambiarContraseñaView(u, usuarioDAO, mensajeHandler);
-                cv.actualizarIdioma();
-                cv.setVisible(true);
-                recuperarView.dispose();
+                Usuario u = usuarioDAO.buscarPorUsername(usr);
+                if (u != null) {
+                    CambiarContraseñaView cv = new CambiarContraseñaView(u, usuarioDAO, mensajeHandler);
+                    cv.actualizarIdioma();
+                    cv.setVisible(true);
+                    recuperarView.dispose();
+                }
             } else {
                 recuperarView.mostrarMensaje(
                         mensajeHandler.get("error.recuperacion.respuesta_incorrecta")
@@ -77,14 +74,15 @@ public class RecuperacionController {
                 .collect(Collectors.toList());
     }
 
-    public void registrarPreguntas(String username, List<Respuesta> respuestasList) {
+    // CORREGIDO: El método ahora recibe y pasa un objeto Usuario
+    public void registrarPreguntas(Usuario usuario, List<Respuesta> respuestasList) {
         String[] preg = new String[respuestasList.size()];
         String[] resp = new String[respuestasList.size()];
         for (int i = 0; i < respuestasList.size(); i++) {
             preg[i] = respuestasList.get(i).getPregunta().getPregunta();
             resp[i] = respuestasList.get(i).getRespuesta();
         }
-        recuperacionDAO.guardarRespuestas(username, preg, resp);
+        recuperacionDAO.guardarRespuestas(usuario, preg, resp);
     }
 
     public void mostrarRecuperar(String username) {
@@ -96,16 +94,23 @@ public class RecuperacionController {
             return;
         }
 
-        List<Integer> ids = recuperacionDAO.getBancoPreguntas().stream()
+        List<Pregunta> bancoPreguntas = recuperacionDAO.getBancoPreguntas();
+        List<Pregunta> preguntasDelUsuario = bancoPreguntas.stream()
                 .filter(p -> hechas.contains(p.getPregunta()))
-                .map(Pregunta::getId)
                 .collect(Collectors.toList());
 
-        int elegido = ids.get(new Random().nextInt(ids.size()));
-        String preguntaLocal = mensajeHandler.get("recuperacion.pregunta." + elegido);
+        if (preguntasDelUsuario.isEmpty()) {
+            loginView.mostrarMensaje(
+                    mensajeHandler.get("error.recuperacion.noPreguntas")
+            );
+            return;
+        }
+
+        Pregunta preguntaElegida = preguntasDelUsuario.get(new Random().nextInt(preguntasDelUsuario.size()));
+        String preguntaLocalizada = mensajeHandler.get("recuperacion.pregunta." + preguntaElegida.getId());
 
         recuperarView.getTxtUsuario().setText(username);
-        recuperarView.setPreguntas(List.of(preguntaLocal));
+        recuperarView.setPreguntas(List.of(preguntaLocalizada));
         recuperarView.actualizarIdioma();
         recuperarView.setVisible(true);
     }
