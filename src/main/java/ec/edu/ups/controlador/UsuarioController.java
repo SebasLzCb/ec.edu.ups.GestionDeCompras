@@ -26,6 +26,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * La clase {@code UsuarioController} es el controlador que maneja toda la lógica de negocio
+ * relacionada con los usuarios del sistema. Esto incluye la autenticación, registro,
+ * listado, modificación y eliminación de usuarios.
+ *
+ * <p>Coordina las interacciones entre las vistas (GUI), los modelos de datos (DAOs)
+ * y el controlador de recuperación de contraseñas. Implementa validaciones de entrada
+ * de usuario, como la validación de cédulas y la fortaleza de contraseñas,
+ * y maneja los mensajes de internacionalización para la interfaz de usuario.</p>
+ *
+ * <p>Además, utiliza el {@link DAOManager} para obtener las implementaciones DAO actuales,
+ * permitiendo la flexibilidad en el tipo de persistencia (memoria, archivos, etc.).</p>
+ */
 public class UsuarioController {
 
     private Usuario usuarioActual;
@@ -43,6 +56,23 @@ public class UsuarioController {
     private IRegistroView registroFrame;
     private final DAOManager daoManager;
 
+    /**
+     * Constructor de la clase {@code UsuarioController}.
+     * Inicializa todas las dependencias DAO, las vistas relacionadas con la gestión de usuarios,
+     * el controlador de recuperación de contraseñas, el manejador de mensajes internacionalizados
+     * y el gestor de DAOs.
+     *
+     * @param usuarioDAO            Objeto DAO para la persistencia de usuarios.
+     * @param loginView             Vista de inicio de sesión.
+     * @param regViewInternal       Vista interna para el registro de usuarios (JInternalFrame).
+     * @param listView              Vista para listar usuarios.
+     * @param modView               Vista para modificar usuarios.
+     * @param elimView              Vista para eliminar usuarios.
+     * @param principal             La ventana principal de la aplicación.
+     * @param recuperacionController Controlador para la lógica de recuperación de contraseñas.
+     * @param mensajeHandler        Manejador para obtener mensajes internacionalizados.
+     * @param daoManager            Gestor de DAOs que proporciona las implementaciones actuales de persistencia.
+     */
     public UsuarioController(UsuarioDAO usuarioDAO,
                              LoginView loginView,
                              UsuarioRegistroView regViewInternal,
@@ -69,12 +99,22 @@ public class UsuarioController {
         configurarEventos();
     }
 
+    /**
+     * Establece la vista de registro externa (implementando {@link IRegistroView})
+     * y configura sus ActionListeners para los botones de crear y cancelar.
+     *
+     * @param registroFrame La instancia de la vista de registro a utilizar.
+     */
     public void setRegistroFrame(IRegistroView registroFrame) {
         this.registroFrame = registroFrame;
         this.registroFrame.getBtnCrear().addActionListener(e -> registrarUsuario(this.registroFrame));
         this.registroFrame.getBtnCancelar().addActionListener(e -> this.registroFrame.dispose());
     }
 
+    /**
+     * Configura la posición inicial de las vistas internas de usuario
+     * dentro del {@link Principal#getDesktopPane()}.
+     */
     private void configurarVistas() {
         regViewInternal.setLocation(100, 100);
         listView.setLocation(40, 40);
@@ -82,6 +122,12 @@ public class UsuarioController {
         elimView.setLocation(80, 80);
     }
 
+    /**
+     * Configura los ActionListeners para los botones y elementos interactivos
+     * de cada una de las vistas de usuario y la ventana principal.
+     * Cada evento está asociado a un método privado que implementa la lógica
+     * de negocio correspondiente.
+     */
     private void configurarEventos() {
         loginView.getBtnIniciarSesion().addActionListener(e -> autenticar());
 
@@ -135,12 +181,24 @@ public class UsuarioController {
         principal.getMenuItemCerrarSesion().addActionListener(e -> cerrarSesion());
     }
 
+    /**
+     * Autentica un usuario con el nombre de usuario y contraseña proporcionados
+     * en la vista de inicio de sesión ({@code LoginView}).
+     * <p>
+     * Antes de la autenticación, se inicializan los DAOs con el tipo de almacenamiento
+     * seleccionado por el usuario en la vista de login, y se actualizan los DAOs
+     * en el controlador de recuperación para asegurar la consistencia.
+     * </p>
+     * Si la autenticación es exitosa, se establece el usuario actual,
+     * se cierra la vista de login y se muestra la ventana principal.
+     * En caso contrario, se muestra un mensaje de error.
+     */
     private void autenticar() {
         String usr = loginView.getTxtUsername().getText().trim();
         String pwd = new String(loginView.getTxtContrasenia().getPassword()).trim();
         String storageTypeKey = loginView.getSelectedStorageTypeKey();
 
-        // CORRECCIÓN: Obtener la ruta de archivos directamente de LoginView
+        // Obtener la ruta de archivos directamente de LoginView
         String filePath = loginView.getRutaArchivos();
 
         daoManager.initializeDAOs(storageTypeKey, filePath);
@@ -160,9 +218,30 @@ public class UsuarioController {
         }
     }
 
+    /**
+     * Registra un nuevo usuario en el sistema utilizando los datos proporcionados
+     * en la vista de registro (ya sea {@code RegistroView} o {@code UsuarioRegistroView}).
+     * <p>
+     * Realiza una serie de validaciones:
+     * <ul>
+     * <li>Campos obligatorios (nombre de usuario, contraseña, nombres, correo, teléfono).</li>
+     * <li>Validación de cédula ecuatoriana para el nombre de usuario.</li>
+     * <li>Validación de fortaleza de contraseña (longitud, caracteres especiales, mayúsculas/minúsculas).</li>
+     * <li>Validación de formato de correo electrónico.</li>
+     * <li>Validación de fecha de nacimiento.</li>
+     * <li>Verifica que el nombre de usuario no exista previamente.</li>
+     * <li>Validación de selección y respuesta de preguntas de seguridad.</li>
+     * <li>Verifica que las preguntas de seguridad seleccionadas sean diferentes.</li>
+     * </ul>
+     * Si todas las validaciones son exitosas, crea el usuario y registra sus respuestas de seguridad.
+     * Muestra mensajes de éxito o errores de validación.
+     *
+     * @param view La instancia de la vista de registro ({@link IRegistroView}) desde la cual se obtienen los datos.
+     */
     public void registrarUsuario(IRegistroView view) {
         try {
             String username = view.getTxtUsuario();
+            // Manteniendo el método getTxtPassword() como lo proporcionaste originalmente
             String password = view.getTxtPassword();
             String nombresCompletos = view.getTxtNombresCompletos();
             LocalDate fechaNacimiento = view.getFechaNacimiento();
@@ -191,9 +270,11 @@ public class UsuarioController {
             String selectedQ2 = (String) view.getCbxPregunta2().getSelectedItem();
             String selectedQ3 = (String) view.getCbxPregunta3().getSelectedItem();
 
-            if (selectedQ1 == null || selectedQ1.equals(mensajeHandler.get("usuario.view.registrar.seleccione_pregunta")) ||
-                    selectedQ2 == null || selectedQ2.equals(mensajeHandler.get("usuario.view.registrar.seleccione_pregunta")) ||
-                    selectedQ3 == null || selectedQ3.equals(mensajeHandler.get("usuario.view.registrar.seleccione_pregunta"))) {
+            // Mensaje por defecto para "Seleccione una pregunta..."
+            String defaultQuestionText = mensajeHandler.get("usuario.view.registrar.seleccione_pregunta");
+            if (selectedQ1 == null || selectedQ1.equals(defaultQuestionText) ||
+                    selectedQ2 == null || selectedQ2.equals(defaultQuestionText) ||
+                    selectedQ3 == null || selectedQ3.equals(defaultQuestionText)) {
                 throw new ValidacionException("usuario.error.registro.seleccionar_preguntas");
             }
 
@@ -217,6 +298,7 @@ public class UsuarioController {
                     telefono
             );
 
+            // Se busca la Pregunta real desde el DAO usando el texto localizado para asociarla a la Respuesta
             Pregunta p1 = recuperacionController.getRecuperacionDAO().getBancoPreguntas().stream()
                     .filter(p -> mensajeHandler.get("recuperacion.pregunta." + p.getId()).equals(selectedQ1))
                     .findFirst()
@@ -253,6 +335,12 @@ public class UsuarioController {
         }
     }
 
+    /**
+     * Refresca las tablas de usuarios en las vistas de listar, eliminar y modificar.
+     * Obtiene la lista completa de usuarios del {@link UsuarioDAO} y las carga en
+     * los modelos de tabla correspondientes, actualizando la información mostrada.
+     * Si la fecha de nacimiento no está especificada, muestra un mensaje localizado.
+     */
     private void refrescar() {
         DefaultTableModel mList = (DefaultTableModel) listView.getTblUsuario().getModel();
         DefaultTableModel mElim = (DefaultTableModel) elimView.getTblUsuarios().getModel();
@@ -276,6 +364,11 @@ public class UsuarioController {
         }
     }
 
+    /**
+     * Busca usuarios en la vista de lista ({@code UsuarioListaView}) basándose en un filtro.
+     * El filtro puede ser por nombre de usuario o por rol. Los resultados se cargan
+     * en la tabla de la vista de lista.
+     */
     private void buscarEnLista() {
         String txt = listView.getTxtBuscar().toLowerCase();
         int idx = listView.getFiltroIndex();
@@ -296,6 +389,16 @@ public class UsuarioController {
         }
     }
 
+    /**
+     * Actualiza un usuario existente seleccionado en la tabla de la vista
+     * de modificar usuario ({@code UsuarioModView}).
+     * <p>
+     * Se permite actualizar la contraseña (si se ingresa una nueva y válida) y el rol del usuario.
+     * La contraseña es validada por su fortaleza. Si las validaciones son exitosas,
+     * el usuario se actualiza a través del {@link UsuarioDAO}.
+     * Muestra mensajes de éxito o error.
+     * </p>
+     */
     private void actualizarUsuario() {
         int filaSeleccionada = modView.getTblUsuarios().getSelectedRow();
         if (filaSeleccionada < 0) {
@@ -345,6 +448,11 @@ public class UsuarioController {
         refrescar();
     }
 
+    /**
+     * Busca usuarios en la vista de eliminación ({@code UsuarioElimView}) basándose en un filtro.
+     * El filtro puede ser por nombre de usuario o por rol. Los resultados se cargan
+     * en la tabla de la vista de eliminación.
+     */
     private void buscarEnEliminar() {
         int idx = elimView.getCbxFiltro().getSelectedIndex();
         String txt = elimView.getTxtBuscar().toLowerCase();
@@ -358,6 +466,16 @@ public class UsuarioController {
         }
     }
 
+    /**
+     * Elimina un usuario seleccionado de la tabla en la vista
+     * de eliminar usuario ({@code UsuarioElimView}).
+     * <p>
+     * Se verifica que se haya seleccionado un usuario y que no se intente eliminar
+     * al usuario "admin" por razones de seguridad. Si la eliminación es exitosa,
+     * el usuario se remueve a través del {@link UsuarioDAO}.
+     * Muestra mensajes de éxito o error.
+     * </p>
+     */
     private void eliminarUsuario() {
         int f = elimView.getTblUsuarios().getSelectedRow();
         if (f < 0) {
@@ -380,6 +498,12 @@ public class UsuarioController {
         refrescar();
     }
 
+    /**
+     * Abre y muestra una ventana interna ({@code JInternalFrame}) en el escritorio principal.
+     * Si la ventana ya está abierta, la trae al frente y la selecciona.
+     *
+     * @param v La instancia de {@code JInternalFrame} a abrir.
+     */
     private void abrirInternal(JInternalFrame v) {
         if (!v.isVisible()) {
             if (v.getParent() == null) {
@@ -395,6 +519,13 @@ public class UsuarioController {
         v.toFront();
     }
 
+    /**
+     * Cierra la sesión del usuario actual.
+     * Establece {@code usuarioActual} a null, oculta la ventana principal
+     * y cierra todas las ventanas internas abiertas en el escritorio.
+     * Finalmente, limpia los campos de la vista de login y la hace visible
+     * para permitir un nuevo inicio de sesión.
+     */
     private void cerrarSesion() {
         usuarioActual = null;
         principal.setVisible(false);
@@ -405,6 +536,11 @@ public class UsuarioController {
         loginView.setVisible(true);
     }
 
+    /**
+     * Obtiene el usuario que ha iniciado sesión actualmente en el sistema.
+     *
+     * @return El objeto {@link Usuario} del usuario actual, o null si no hay sesión iniciada.
+     */
     public Usuario getUsuarioActual() {
         return usuarioActual;
     }

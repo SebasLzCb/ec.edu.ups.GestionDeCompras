@@ -69,38 +69,57 @@ public class MiJDesktopPane extends JDesktopPane {
 
         // — 4) Carrito dentro de la pantalla —
         int sx = mX + pad, sy = mY + pad, sW = mW - 2 * pad, sH = mH - 2 * pad;
-        int cx = sx + sW / 4, cy = sy + sH / 2 + 10;
-        int cartH = sH / 4, cartW = sW / 2;
+        int cx = sx + sW / 4; // Base X for the cart
+        int cy = sy + sH / 2 + 10; // Base Y for the cart (around vertical center)
+        int cartH = sH / 4; // Height of the cart body
+        int cartW = sW / 2; // Width of the cart body
 
         g2.setStroke(new BasicStroke(5f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         g2.setColor(Color.WHITE);
-        // mango
-        g2.drawLine(cx, cy - cartH / 2, cx + cartW / 6, cy - cartH / 2 - cartH / 4);
-        // armazón
-        g2.drawLine(cx + cartW / 6, cy - cartH / 2 - cartH / 4,
-                cx + cartW, cy - cartH / 2 - cartH / 4);
-        g2.drawLine(cx + cartW, cy - cartH / 2 - cartH / 4,
-                cx + cartW - cartW / 6, cy + cartH / 2 - cartH / 4);
-        g2.drawLine(cx + cartW / 6, cy + cartH / 2 - cartH / 4,
-                cx + cartW - cartW / 6, cy + cartH / 2 - cartH / 4);
-        g2.drawLine(cx + cartW / 6, cy - cartH / 2 - cartH / 4,
-                cx + cartW / 6, cy + cartH / 2 - cartH / 4);
 
-        // rejilla
+        // Define cart body coordinates for a straight back
+        int cartFrontX = cx + cartW / 6;
+        int cartBackX = cx + cartW; // This makes the back straight
+        int cartTopY = cy - cartH / 2 - cartH / 4;
+        int cartBottomY = cy + cartH / 2 - cartH / 4;
+
+        // mango (handle)
+        g2.drawLine(cx, cy - cartH / 2, cartFrontX, cartTopY);
+
+        // armazón (body)
+        // Top horizontal line
+        g2.drawLine(cartFrontX, cartTopY, cartBackX, cartTopY);
+        // Back vertical line (modified from inclined to be straight)
+        g2.drawLine(cartBackX, cartTopY, cartBackX, cartBottomY);
+        // Bottom horizontal line (adjusted to meet the straight back)
+        g2.drawLine(cartFrontX, cartBottomY, cartBackX, cartBottomY);
+        // Front vertical line
+        g2.drawLine(cartFrontX, cartTopY, cartFrontX, cartBottomY);
+
+        // rejilla (grid)
         g2.setStroke(new BasicStroke(2f));
-        for (int i = 1; i <= 3; i++) {
-            int x = cx + cartW / 6 + i * ((cartW - 2 * (cartW / 6)) / 4);
-            g2.drawLine(x, cy - cartH / 2 - cartH / 4 + 5,
-                    x, cy + cartH / 2 - cartH / 4 - 5);
-        }
-        int yGrid = cy - cartH / 2 - cartH / 4 + cartH / 2;
-        g2.drawLine(cx + cartW / 6 + 5, yGrid,
-                cx + cartW - cartW / 6 - 5, yGrid);
+        // Vertical grid lines
+        // Distribute 3 vertical lines evenly between the front and back of the cart
+        int gridStartX = cartFrontX;
+        int gridEndX = cartBackX;
+        int numVerticalLines = 3;
+        int verticalLineSpacing = (gridEndX - gridStartX) / (numVerticalLines + 1);
 
-        // ruedas
+        for (int i = 1; i <= numVerticalLines; i++) {
+            int x = gridStartX + i * verticalLineSpacing;
+            g2.drawLine(x, cartTopY + 5, x, cartBottomY - 5); // Adjusted Y padding
+        }
+
+        // Horizontal grid line (centered vertically within the cart body)
+        int yGrid = cartTopY + (cartBottomY - cartTopY) / 2;
+        g2.drawLine(cartFrontX + 5, yGrid, cartBackX - 5, yGrid); // Adjusted X padding
+
+        // ruedas (wheels)
         int r = cartH / 3;
-        g2.fillOval(cx + cartW / 6 - r, cy + cartH / 2 - cartH / 4, r * 2, r * 2);
-        g2.fillOval(cx + (5 * cartW / 6) - r, cy + cartH / 2 - cartH / 4, r * 2, r * 2);
+        // Front wheel: positioned at the bottom-front corner
+        g2.fillOval(cartFrontX - r, cartBottomY, r * 2, r * 2);
+        // Back wheel: positioned at the bottom-back corner, slightly in
+        g2.fillOval(cartBackX - (cartW / 6) - r, cartBottomY, r * 2, r * 2);
 
         // — 5) Teclado —
         int kbW = mW / 2, kbH = 30;
