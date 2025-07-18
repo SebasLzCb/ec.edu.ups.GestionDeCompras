@@ -63,14 +63,19 @@ public class Main {
             CarritoDAO carritoDAO = new CarritoDAOMemoria();
             RecuperacionDAO recuperacionDAO = new RecuperacionDAOMemoria(usuarioDAO);
 
+            // Inicializar RecuperacionController antes de LoginView
             RecuperacionController recuperacionController = new RecuperacionController(recuperacionDAO, usuarioDAO, mensajeHandler);
-            Principal principal = new Principal(mensajeHandler);
             LoginView loginView = new LoginView(recuperacionController, mensajeHandler);
+
+            // Se inicializa RecuperarContraseñaView aquí y se la pasa al controlador de recuperación
+            RecuperarContraseñaView recuperarContraseniaView = new RecuperarContraseñaView(mensajeHandler, recuperacionController.obtenerPreguntasLocalizadas());
+            recuperacionController.setRecuperarView(recuperarContraseniaView);
+
 
             RegistroView registroFrame = new RegistroView(mensajeHandler);
             UsuarioRegistroView registroViewInternal = new UsuarioRegistroView(mensajeHandler);
             loginView.setRegistroFrame(registroFrame);
-            recuperacionController.setLoginView(loginView);
+            recuperacionController.setLoginView(loginView); // Asegura que loginView también esté seteada en recuperacionController
 
             registroFrame.getBtnCrear().addActionListener(ev -> {
                 String usr = registroFrame.getTxtUsuario();
@@ -101,6 +106,9 @@ public class Main {
                 registroFrame.mostrarMensaje("Usuario registrado con éxito.");
                 registroFrame.dispose();
             });
+
+            Principal principal = new Principal(mensajeHandler);
+            loginView.setPrincipal(principal); // Se asegura que principal esté seteada en LoginView
 
             UsuarioListaView listaView = new UsuarioListaView(mensajeHandler);
             UsuarioModView modView = new UsuarioModView(mensajeHandler);
