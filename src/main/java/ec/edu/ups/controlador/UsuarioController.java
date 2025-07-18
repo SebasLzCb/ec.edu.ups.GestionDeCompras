@@ -1,6 +1,5 @@
 package ec.edu.ups.controlador;
 
-import ec.edu.ups.Main;
 import ec.edu.ups.dao.UsuarioDAO;
 import ec.edu.ups.modelo.Rol;
 import ec.edu.ups.modelo.Pregunta;
@@ -14,6 +13,10 @@ import ec.edu.ups.vista.Usuario.UsuarioRegistroView;
 import ec.edu.ups.vista.Usuario.UsuarioListaView;
 import ec.edu.ups.vista.Usuario.UsuarioModView;
 import ec.edu.ups.vista.Usuario.UsuarioElimView;
+import ec.edu.ups.util.ValidacionUtils;
+import ec.edu.ups.excepciones.ValidacionException;
+import ec.edu.ups.modelo.IRegistroView;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.time.LocalDate;
@@ -27,28 +30,31 @@ public class UsuarioController {
     private Usuario usuarioActual;
     private final UsuarioDAO dao;
     private final LoginView loginView;
-    private final UsuarioRegistroView regView;
+    private final IRegistroView registroJFrame;
+    private final IRegistroView registroJInternalFrame;
     private final UsuarioListaView listView;
     private final UsuarioModView modView;
     private final UsuarioElimView elimView;
     private final Principal principal;
+    private final RecuperacionController recuperacionController;
     private final MensajeInternacionalizacionHandler mensajeHandler;
-    private final ec.edu.ups.controlador.RecuperacionController recuperacionController;
     private Map<String, Pregunta> preguntasMap;
 
     public UsuarioController(UsuarioDAO dao,
                              LoginView loginView,
-                             UsuarioRegistroView regView,
-                             UsuarioListaView listView,
+                             IRegistroView registroJFrame,
+                             IRegistroView registroJInternalFrame,
+                             UsuarioListaView listaView,
                              UsuarioModView modView,
                              UsuarioElimView elimView,
                              Principal principal,
-                             ec.edu.ups.controlador.RecuperacionController recuperacionController,
+                             RecuperacionController recuperacionController,
                              MensajeInternacionalizacionHandler mensajeHandler) {
         this.dao                     = dao;
         this.loginView               = loginView;
-        this.regView                 = regView;
-        this.listView                = listView;
+        this.registroJFrame          = registroJFrame;
+        this.registroJInternalFrame  = registroJInternalFrame;
+        this.listView                = listaView;
         this.modView                 = modView;
         this.elimView                = elimView;
         this.principal               = principal;
@@ -60,27 +66,76 @@ public class UsuarioController {
         configurarEventos();
     }
 
+    public void setUsuarioActual(Usuario usuarioActual) {
+        this.usuarioActual = usuarioActual;
+    }
+
     private void configurarVistas() {
         listView.setLocation(40, 40);
         modView.setLocation(60, 60);
         elimView.setLocation(80, 80);
-        regView.setLocation(100, 100);
+
+        // El JFrame (registroJFrame) suele posicionarse con setLocationRelativeTo(null) en su constructor
+        // o con pack() en la clase principal que lo muestra. No se necesita setLocation aquí.
+
+        // CAMBIO: Se realiza un 'cast' a JInternalFrame para poder usar setLocation
+        if (registroJInternalFrame instanceof JInternalFrame) {
+            ((JInternalFrame) registroJInternalFrame).setLocation(100, 100);
+        } else {
+            System.err.println("ADVERTENCIA: registroJInternalFrame no es una instancia de JInternalFrame.");
+        }
     }
 
     private void configurarEventos() {
-        loginView.getBtnIniciarSesion().addActionListener(e -> autenticar());
+        System.out.println("DEBUG: Intentando configurar eventos de RegistroView.");
+        if (registroJFrame == null) {
+            System.err.println("ERROR DEBUG: registroJFrame es NULL en configurarEventos. Los listeners NO se adjuntarán.");
+            // No retornamos aquí, para que intente adjuntar listeners al JInternalFrame si existe.
+        } else {
+            if (registroJFrame.getBtnCrear() == null) {
+                System.err.println("ERROR DEBUG: registroJFrame.getBtnCrear() devuelve NULL.");
+            }
+            if (registroJFrame.getBtnCancelar() == null) {
+                System.err.println("ERROR DEBUG: registroJFrame.getBtnCancelar() devuelve NULL.");
+            }
+        }
+
+        if (registroJInternalFrame == null) {
+            System.err.println("ERROR DEBUG: registroJInternalFrame es NULL en configurarEventos. Los listeners NO se adjuntarán.");
+            // No retornamos aquí, para que los listeners del JFrame puedan adjuntarse si existen.
+        } else {
+            if (registroJInternalFrame.getBtnCrear() == null) {
+                System.err.println("ERROR DEBUG: registroJInternalFrame.getBtnCrear() devuelve NULL.");
+            }
+            if (registroJInternalFrame.getBtnCancelar() == null) {
+                System.err.println("ERROR DEBUG: registroJInternalFrame.getBtnCancelar() devuelve NULL.");
+            }
+        }
+
         loginView.getBtnRegistrar().addActionListener(e -> {
-            RegistroView registroJFrame = loginView.getRegistroFrame();
             if (registroJFrame != null) {
                 List<String> preguntas = recuperacionController.obtenerPreguntasLocalizadas();
                 registroJFrame.setPreguntas(preguntas);
                 registroJFrame.limpiarCampos();
                 registroJFrame.setVisible(true);
+            } else {
+                loginView.mostrarMensaje("Error: La ventana de registro (JFrame) no fue inicializada.");
             }
         });
 
-        regView.getBtnCrear().addActionListener(e -> registrar());
-        regView.getBtnCancelar().addActionListener(e -> regView.dispose());
+        // Listeners para los botones del JFrame de registro (RegistroView)
+        if (registroJFrame != null && registroJFrame.getBtnCrear() != null && registroJFrame.getBtnCancelar() != null) {
+            System.out.println("DEBUG: Adjuntando listeners a RegistroView (JFrame).");
+            registroJFrame.getBtnCrear().addActionListener(e -> registrarUsuario(registroJFrame));
+            registroJFrame.getBtnCancelar().addActionListener(e -> registroJFrame.dispose());
+        }
+
+        // Listeners para los botones del JInternalFrame de registro (UsuarioRegistroView)
+        if (registroJInternalFrame != null && registroJInternalFrame.getBtnCrear() != null && registroJInternalFrame.getBtnCancelar() != null) {
+            System.out.println("DEBUG: Adjuntando listeners a UsuarioRegistroView (JInternalFrame).");
+            registroJInternalFrame.getBtnCrear().addActionListener(e -> registrarUsuario(registroJInternalFrame));
+            registroJInternalFrame.getBtnCancelar().addActionListener(e -> registroJInternalFrame.dispose());
+        }
 
         listView.getBtnRefrescar().addActionListener(e -> refrescar());
         listView.getBtnBuscar().addActionListener(e -> buscarEnLista());
@@ -93,21 +148,20 @@ public class UsuarioController {
         modView.getBtnActualizar().addActionListener(e -> actualizarUsuario());
         modView.getBtnCancelar().addActionListener(e -> modView.dispose());
 
-        principal.getMenuItemEliminarUsuario().addActionListener(e -> {
-            refrescar();
-            abrirInternal(elimView);
-        });
-        elimView.getBtnBuscar().addActionListener(e -> buscarEnEliminar());
-        elimView.getBtnEliminar().addActionListener(e -> eliminarUsuario());
-
+        // Listener para el menú "Registrar Usuario" (abre el JInternalFrame)
         principal.getMenuItemRegistrarUsuario().addActionListener(ev -> {
-            List<Pregunta> preguntas = recuperacionController.getRecuperacionDAO().getBancoPreguntas();
-            preguntasMap.clear();
-            for (Pregunta p : preguntas) {
-                preguntasMap.put(mensajeHandler.get("recuperacion.pregunta." + p.getId()), p);
+            if (registroJInternalFrame != null) {
+                List<Pregunta> preguntas = recuperacionController.getRecuperacionDAO().getBancoPreguntas();
+                preguntasMap.clear();
+                for (Pregunta p : preguntas) {
+                    preguntasMap.put(mensajeHandler.get("recuperacion.pregunta." + p.getId()), p);
+                }
+                registroJInternalFrame.setPreguntas(preguntasMap.keySet().stream().collect(Collectors.toList()));
+                registroJInternalFrame.limpiarCampos();
+                abrirInternal((JInternalFrame) registroJInternalFrame); // Se asegura de que sea un JInternalFrame
+            } else {
+                principal.mostrarMensaje("Error: La ventana de registro interna no fue inicializada.");
             }
-            regView.setPreguntas(preguntasMap.keySet().stream().collect(Collectors.toList()));
-            abrirInternal(regView);
         });
 
         principal.getMenuItemListarUsuarios().addActionListener(e -> {
@@ -117,73 +171,96 @@ public class UsuarioController {
         principal.getMenuItemCerrarSesion().addActionListener(e -> cerrarSesion());
     }
 
-    private void autenticar() {
-        String usr = loginView.getTxtUsername().getText().trim();
-        String pwd = new String(loginView.getTxtContrasenia().getPassword()).trim();
-        usuarioActual = dao.autenticar(usr, pwd);
-        if (usuarioActual == null) {
-            loginView.mostrarMensaje(
-                    mensajeHandler.get("usuario.error.credenciales")
+    private void registrarUsuario(IRegistroView currentView) {
+        System.out.println("DEBUG: Método registrarUsuario() inicia para la vista: " + currentView.getClass().getSimpleName());
+        String username     = currentView.getTxtUsuario();
+        String password     = currentView.getTxtPassword();
+        String nombresComp  = currentView.getTxtNombresCompletos();
+        String correo       = currentView.getTxtCorreo();
+        String telefono     = currentView.getTxtTelefono();
+        LocalDate fechaNac  = currentView.getFechaNacimiento();
+        String respuesta1   = currentView.getTxtRespuesta1();
+        String respuesta2   = currentView.getTxtRespuesta2();
+        String respuesta3   = currentView.getTxtRespuesta3();
+
+        String q1 = (String) currentView.getCbxPregunta1().getSelectedItem();
+        String q2 = (String) currentView.getCbxPregunta2().getSelectedItem();
+        String q3 = (String) currentView.getCbxPregunta3().getSelectedItem();
+
+        try {
+            ValidacionUtils.validarCampoObligatorio(username, mensajeHandler.get("usuario.view.registrar.username"));
+            ValidacionUtils.validarCampoObligatorio(password, mensajeHandler.get("usuario.view.registrar.password"));
+            ValidacionUtils.validarCampoObligatorio(nombresComp, mensajeHandler.get("usuario.view.registrar.nombres"));
+            ValidacionUtils.validarCampoObligatorio(correo, mensajeHandler.get("usuario.view.registrar.correo"));
+            ValidacionUtils.validarCampoObligatorio(telefono, mensajeHandler.get("usuario.view.registrar.telefono"));
+            ValidacionUtils.validarCampoObligatorio(respuesta1, mensajeHandler.get("usuario.view.registrar.respuesta1"));
+            ValidacionUtils.validarCampoObligatorio(respuesta2, mensajeHandler.get("usuario.view.registrar.respuesta2"));
+            ValidacionUtils.validarCampoObligatorio(respuesta3, mensajeHandler.get("usuario.view.registrar.respuesta3"));
+
+            ValidacionUtils.validarCedulaEcuatoriana(username);
+            ValidacionUtils.validarContrasenia(password);
+            ValidacionUtils.validarCorreo(correo);
+
+            if (fechaNac == null) {
+                throw new ValidacionException(mensajeHandler.get("usuario.error.registro.fecha_nacimiento_invalida"));
+            }
+            if (fechaNac.isAfter(LocalDate.now())) {
+                throw new ValidacionException(mensajeHandler.get("usuario.error.registro.fecha_futura"));
+            }
+
+            if (currentView.getCbxPregunta1().getSelectedIndex() <= 0 ||
+                    currentView.getCbxPregunta2().getSelectedIndex() <= 0 ||
+                    currentView.getCbxPregunta3().getSelectedIndex() <= 0) {
+                throw new ValidacionException(mensajeHandler.get("usuario.error.registro.seleccionar_preguntas"));
+            }
+            if (q1.equals(q2) || q1.equals(q3) || q2.equals(q3)) {
+                throw new ValidacionException(mensajeHandler.get("usuario.error.registro.preguntas_diferentes"));
+            }
+
+            Usuario nuevoUsuario = new Usuario(
+                    username,
+                    password,
+                    Rol.USUARIO,
+                    nombresComp,
+                    fechaNac,
+                    correo,
+                    telefono
             );
-        } else {
-            loginView.dispose();
-            principal.setVisible(true);
+
+            Pregunta p1 = recuperacionController.getRecuperacionDAO().getBancoPreguntas().stream().filter(p -> mensajeHandler.get("recuperacion.pregunta." + p.getId()).equals(q1)).findFirst().orElse(null);
+            Pregunta p2 = recuperacionController.getRecuperacionDAO().getBancoPreguntas().stream().filter(p -> mensajeHandler.get("recuperacion.pregunta." + p.getId()).equals(q2)).findFirst().orElse(null);
+            Pregunta p3 = recuperacionController.getRecuperacionDAO().getBancoPreguntas().stream().filter(p -> mensajeHandler.get("recuperacion.pregunta." + p.getId()).equals(q3)).findFirst().orElse(null);
+
+            if (p1 == null || p2 == null || p3 == null) {
+                throw new ValidacionException(mensajeHandler.get("usuario.error.registro.preguntas_no_encontradas"));
+            }
+
+            List<Respuesta> respuestas = List.of(
+                    new Respuesta(nuevoUsuario, p1, respuesta1),
+                    new Respuesta(nuevoUsuario, p2, respuesta2),
+                    new Respuesta(nuevoUsuario, p3, respuesta3)
+            );
+
+            if (dao.buscarPorUsername(username) != null) {
+                throw new ValidacionException(mensajeHandler.get("usuario.error.registro.username_existe"));
+            }
+
+            dao.crear(nuevoUsuario);
+            recuperacionController.registrarPreguntas(nuevoUsuario, respuestas);
+
+            currentView.mostrarMensaje(mensajeHandler.get("usuario.success.registro_exitoso"));
+            currentView.limpiarCampos();
+            currentView.dispose();
+            refrescar();
+
+        } catch (ValidacionException exc) {
+            currentView.mostrarMensaje(exc.getMessage());
+        } catch (Exception exc) {
+            System.err.println("Error inesperado al registrar usuario: " + exc.getMessage());
+            exc.printStackTrace();
+            currentView.mostrarMensaje(mensajeHandler.get("usuario.error.registro.inesperado"));
         }
-    }
-
-    private void registrar() {
-
-        if (regView.getTxtUsuario().isEmpty() || regView.getTxtPassword().isEmpty() || regView.getTxtNombresCompletos().isEmpty() || regView.getTxtCorreo().isEmpty()) {
-            regView.mostrarMensaje(mensajeHandler.get("usuario.error.registro.campos_obligatorios"));
-            return;
-        }
-
-        if (regView.getCbxPregunta1().getSelectedIndex() <= 0 || regView.getCbxPregunta2().getSelectedIndex() <= 0 || regView.getCbxPregunta3().getSelectedIndex() <= 0) {
-            regView.mostrarMensaje(mensajeHandler.get("usuario.error.registro.seleccionar_preguntas"));
-            return;
-        }
-
-        if (regView.getTxtRespuesta1().isEmpty() || regView.getTxtRespuesta2().isEmpty() || regView.getTxtRespuesta3().isEmpty()) {
-            regView.mostrarMensaje(mensajeHandler.get("usuario.error.registro.responder_preguntas"));
-            return;
-        }
-
-        String q1 = regView.getCbxPregunta1().getSelectedItem().toString();
-        String q2 = regView.getCbxPregunta2().getSelectedItem().toString();
-        String q3 = regView.getCbxPregunta3().getSelectedItem().toString();
-
-        if (q1.equals(q2) || q1.equals(q3) || q2.equals(q3)) {
-            regView.mostrarMensaje(mensajeHandler.get("usuario.error.registro.preguntas_diferentes"));
-            return;
-        }
-
-        Usuario nuevoUsuario = new Usuario(
-                regView.getTxtUsuario(),
-                regView.getTxtPassword(),
-                Rol.USUARIO,
-                regView.getTxtNombresCompletos(),
-                regView.getFechaNacimiento(),
-                regView.getTxtCorreo(),
-                regView.getTxtTelefono()
-        );
-
-        Pregunta p1 = preguntasMap.get(q1);
-        Pregunta p2 = preguntasMap.get(q2);
-        Pregunta p3 = preguntasMap.get(q3);
-
-        List<Respuesta> respuestas = List.of(
-                new Respuesta(nuevoUsuario, p1, regView.getTxtRespuesta1()),
-                new Respuesta(nuevoUsuario, p2, regView.getTxtRespuesta2()),
-                new Respuesta(nuevoUsuario, p3, regView.getTxtRespuesta3())
-        );
-
-        dao.crear(nuevoUsuario);
-        recuperacionController.registrarPreguntas(nuevoUsuario, respuestas);
-
-        regView.mostrarMensaje(mensajeHandler.get("usuario.success.registro_exitoso"));
-        regView.limpiarCampos();
-        regView.dispose();
-        refrescar();
+        System.out.println("DEBUG: Método registrarUsuario() finaliza.");
     }
 
     private void refrescar() {
@@ -247,7 +324,13 @@ public class UsuarioController {
 
         String nuevoPassword = modView.getTxtPassword();
         if (!nuevoPassword.isEmpty()) {
-            usuarioParaActualizar.setContrasenia(nuevoPassword);
+            try {
+                ValidacionUtils.validarContrasenia(nuevoPassword);
+                usuarioParaActualizar.setContrasenia(nuevoPassword);
+            } catch (ValidacionException e) {
+                modView.mostrarMensaje(e.getMessage());
+                return;
+            }
         }
 
         String rolSeleccionado = (String) modView.getCbxRol().getSelectedItem();
@@ -282,16 +365,22 @@ public class UsuarioController {
         int f = elimView.getTblUsuarios().getSelectedRow();
         if (f < 0) {
             elimView.mostrarMensaje(
-                    mensajeHandler.get("usuario.error.campos_obligatorios")
+                    mensajeHandler.get("usuario.error.seleccione_usuario")
             );
             return;
         }
         String usr = elimView.getModel().getValueAt(f, 0).toString();
-        dao.eliminar(usr);
-        elimView.mostrarMensaje(
-                mensajeHandler.get("usuario.success.eliminado")
-        );
-        refrescar();
+        int confirm = JOptionPane.showConfirmDialog(elimView,
+                mensajeHandler.get("usuario.confirm.eliminar") + " " + usr + "?",
+                mensajeHandler.get("usuario.confirm.titulo"),
+                JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            dao.eliminar(usr);
+            elimView.mostrarMensaje(
+                    mensajeHandler.get("usuario.success.eliminado")
+            );
+            refrescar();
+        }
     }
 
     private void abrirInternal(JInternalFrame v) {

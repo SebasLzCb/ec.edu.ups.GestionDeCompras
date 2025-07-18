@@ -16,12 +16,12 @@ import java.util.stream.Collectors;
 
 public class RecuperacionController {
 
-    private final RecuperacionDAO recuperacionDAO;
-    private final UsuarioDAO      usuarioDAO;
+    private RecuperacionDAO recuperacionDAO;
+    private UsuarioDAO      usuarioDAO;
     private final MensajeInternacionalizacionHandler mensajeHandler;
 
-    private LoginView loginView;
     private RecuperarContraseñaView recuperarView;
+    private LoginView loginView;
 
     public RecuperacionController(RecuperacionDAO recuperacionDAO,
                                   UsuarioDAO usuarioDAO,
@@ -31,7 +31,14 @@ public class RecuperacionController {
         this.mensajeHandler  = mensajeHandler;
     }
 
-    // Getter para el DAO, útil para el controlador de usuario
+    public void setUsuarioDAO(UsuarioDAO usuarioDAO) {
+        this.usuarioDAO = usuarioDAO;
+    }
+
+    public void setRecuperacionDAO(RecuperacionDAO recuperacionDAO) {
+        this.recuperacionDAO = recuperacionDAO;
+    }
+
     public RecuperacionDAO getRecuperacionDAO() {
         return this.recuperacionDAO;
     }
@@ -48,9 +55,15 @@ public class RecuperacionController {
             String pregunta  = recuperarView.getPreguntas()[0];
             String respuesta = recuperarView.getRespuestas()[0];
 
+            if (recuperacionDAO == null || usuarioDAO == null) {
+                recuperarView.mostrarMensaje(mensajeHandler.get("error.recuperacion.daos_no_inicializados"));
+                return;
+            }
+
             if (recuperacionDAO.validar(usr, pregunta, respuesta)) {
                 Usuario u = usuarioDAO.buscarPorUsername(usr);
                 if (u != null) {
+                    // Asegurarse de que el usuarioDAO para la vista CambiarContraseñaView no sea nulo
                     CambiarContraseñaView cv = new CambiarContraseñaView(u, usuarioDAO, mensajeHandler);
                     cv.actualizarIdioma();
                     cv.setVisible(true);
@@ -69,13 +82,22 @@ public class RecuperacionController {
     }
 
     public List<String> obtenerPreguntasLocalizadas() {
+        // Asegurarse de que recuperacionDAO no es nulo antes de usarlo
+        if (recuperacionDAO == null) {
+            // Esto no debería suceder con la inicialización temporal en Main
+            System.err.println("ADVERTENCIA: recuperacionDAO es nulo en obtenerPreguntasLocalizadas al inicio.");
+            return new java.util.ArrayList<>();
+        }
         return recuperacionDAO.getBancoPreguntas().stream()
                 .map(p -> mensajeHandler.get("recuperacion.pregunta." + p.getId()))
                 .collect(Collectors.toList());
     }
 
-    // CORREGIDO: El método ahora recibe y pasa un objeto Usuario
     public void registrarPreguntas(Usuario usuario, List<Respuesta> respuestasList) {
+        if (recuperacionDAO == null) {
+            System.err.println("ADVERTENCIA: recuperacionDAO es nulo en registrarPreguntas.");
+            return;
+        }
         String[] preg = new String[respuestasList.size()];
         String[] resp = new String[respuestasList.size()];
         for (int i = 0; i < respuestasList.size(); i++) {
@@ -86,6 +108,15 @@ public class RecuperacionController {
     }
 
     public void mostrarRecuperar(String username) {
+        if (recuperacionDAO == null || usuarioDAO == null || loginView == null || recuperarView == null) {
+            if (loginView != null) {
+                loginView.mostrarMensaje(mensajeHandler.get("error.recuperacion.inicializacion_pendiente"));
+            } else {
+                System.err.println("ADVERTENCIA: No se pudo mostrar la recuperación. LoginView o DAOs no inicializados.");
+            }
+            return;
+        }
+
         List<String> hechas = recuperacionDAO.getPreguntasUsuario(username);
         if (hechas.isEmpty()) {
             loginView.mostrarMensaje(

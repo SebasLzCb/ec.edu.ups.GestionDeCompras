@@ -12,6 +12,11 @@ import ec.edu.ups.dao.impl.CarritoDAOMemoria;
 import ec.edu.ups.dao.impl.ProductoDAOMemoria;
 import ec.edu.ups.dao.impl.RecuperacionDAOMemoria;
 import ec.edu.ups.dao.impl.UsuarioDAOMemoria;
+import ec.edu.ups.dao.impl.CarritoDAOArchivoTexto;
+import ec.edu.ups.dao.impl.ProductoDAOArchivoTexto;
+import ec.edu.ups.dao.impl.RecuperacionDAOArchivoTexto;
+import ec.edu.ups.dao.impl.UsuarioDAOArchivoTexto;
+
 import ec.edu.ups.modelo.Pregunta;
 import ec.edu.ups.modelo.Respuesta;
 import ec.edu.ups.modelo.Rol;
@@ -58,117 +63,132 @@ public class Main {
 
             MensajeInternacionalizacionHandler mensajeHandler = new MensajeInternacionalizacionHandler("es", "EC");
 
-            UsuarioDAO usuarioDAO = new UsuarioDAOMemoria();
-            ProductoDAO productoDAO = new ProductoDAOMemoria();
-            CarritoDAO carritoDAO = new CarritoDAOMemoria();
-            RecuperacionDAO recuperacionDAO = new RecuperacionDAOMemoria(usuarioDAO);
+            UsuarioDAO tempUsuarioDAO = new UsuarioDAOMemoria();
+            RecuperacionDAO tempRecuperacionDAO = new RecuperacionDAOMemoria(tempUsuarioDAO);
 
-            // Inicializar RecuperacionController antes de LoginView
-            RecuperacionController recuperacionController = new RecuperacionController(recuperacionDAO, usuarioDAO, mensajeHandler);
+            RecuperacionController recuperacionController = new RecuperacionController(tempRecuperacionDAO, tempUsuarioDAO, mensajeHandler);
             LoginView loginView = new LoginView(recuperacionController, mensajeHandler);
 
-            // Se inicializa RecuperarContraseñaView aquí y se la pasa al controlador de recuperación
+            recuperacionController.setLoginView(loginView);
+
             RecuperarContraseñaView recuperarContraseniaView = new RecuperarContraseñaView(mensajeHandler, recuperacionController.obtenerPreguntasLocalizadas());
             recuperacionController.setRecuperarView(recuperarContraseniaView);
 
-
-            RegistroView registroFrame = new RegistroView(mensajeHandler);
-            UsuarioRegistroView registroViewInternal = new UsuarioRegistroView(mensajeHandler);
-            loginView.setRegistroFrame(registroFrame);
-            recuperacionController.setLoginView(loginView); // Asegura que loginView también esté seteada en recuperacionController
-
-            registroFrame.getBtnCrear().addActionListener(ev -> {
-                String usr = registroFrame.getTxtUsuario();
-                if (usr.isEmpty() || registroFrame.getTxtPassword().isEmpty()) {
-                    registroFrame.mostrarMensaje("Usuario y contraseña son obligatorios.");
-                    return;
-                }
-                if (usuarioDAO.buscarPorUsername(usr) != null) {
-                    registroFrame.mostrarMensaje("El nombre de usuario ya existe.");
-                    return;
-                }
-
-                Usuario nuevoUsuario = new Usuario(usr, registroFrame.getTxtPassword(), Rol.USUARIO);
-                usuarioDAO.crear(nuevoUsuario);
-
-                String[] preguntas = {
-                        registroFrame.getCbxPregunta1().getSelectedItem().toString(),
-                        registroFrame.getCbxPregunta2().getSelectedItem().toString(),
-                        registroFrame.getCbxPregunta3().getSelectedItem().toString()
-                };
-                String[] respuestas = {
-                        registroFrame.getTxtRespuesta1(),
-                        registroFrame.getTxtRespuesta2(),
-                        registroFrame.getTxtRespuesta3()
-                };
-                recuperacionDAO.guardarRespuestas(nuevoUsuario, preguntas, respuestas);
-
-                registroFrame.mostrarMensaje("Usuario registrado con éxito.");
-                registroFrame.dispose();
-            });
-
             Principal principal = new Principal(mensajeHandler);
-            loginView.setPrincipal(principal); // Se asegura que principal esté seteada en LoginView
+            loginView.setPrincipal(principal);
 
-            UsuarioListaView listaView = new UsuarioListaView(mensajeHandler);
-            UsuarioModView modView = new UsuarioModView(mensajeHandler);
-            UsuarioElimView elimView = new UsuarioElimView(mensajeHandler);
+            // Inicializamos ambas instancias de vista de registro
+            RegistroView registroJFrame = new RegistroView(mensajeHandler); // JFrame
+            UsuarioRegistroView registroJInternalFrame = new UsuarioRegistroView(mensajeHandler); // JInternalFrame
 
-            UsuarioController usuarioController = new UsuarioController(
-                    usuarioDAO, loginView, registroViewInternal, listaView, modView, elimView,
-                    principal, recuperacionController, mensajeHandler
-            );
-            ProductoAñadirView prodAddView = new ProductoAñadirView(mensajeHandler);
-            ProductoListaView prodListView = new ProductoListaView(mensajeHandler);
-            ProductoModView prodModView = new ProductoModView(mensajeHandler);
-            ProductoElimView prodElimView = new ProductoElimView(productoDAO, mensajeHandler);
+            loginView.setRegistroFrame(registroJFrame); // LoginView sigue abriendo este JFrame
 
-            new ProductoController(productoDAO, prodAddView, prodListView, prodModView, prodElimView, mensajeHandler);
+            loginView.setVisible(true);
+
+            loginView.addLoginActionListener(e -> {
+                String selectedStorageType = loginView.getSelectedStorageType();
+
+                UsuarioDAO finalUsuarioDAO;
+                ProductoDAO finalProductoDAO;
+                CarritoDAO finalCarritoDAO;
+                RecuperacionDAO finalRecuperacionDAO;
+
+                if (mensajeHandler.get("login.storage.memory").equals(selectedStorageType)) {
+                    System.out.println("INFO: Usando almacenamiento en memoria.");
+                    finalUsuarioDAO = new UsuarioDAOMemoria();
+                    finalProductoDAO = new ProductoDAOMemoria();
+                    finalCarritoDAO = new CarritoDAOMemoria();
+                    finalRecuperacionDAO = new RecuperacionDAOMemoria(finalUsuarioDAO);
+                } else if (mensajeHandler.get("login.storage.file_system").equals(selectedStorageType)) {
+                    System.out.println("INFO: Usando almacenamiento en archivos de texto.");
+                    finalUsuarioDAO = new UsuarioDAOArchivoTexto();
+                    finalProductoDAO = new ProductoDAOArchivoTexto();
+                    finalCarritoDAO = new CarritoDAOArchivoTexto();
+                    finalRecuperacionDAO = new RecuperacionDAOArchivoTexto(finalUsuarioDAO);
+                } else {
+                    System.err.println("ADVERTENCIA: Tipo de almacenamiento no reconocido o no seleccionado. Usando memoria por defecto.");
+                    finalUsuarioDAO = new UsuarioDAOMemoria();
+                    finalProductoDAO = new ProductoDAOMemoria();
+                    finalCarritoDAO = new CarritoDAOMemoria();
+                    finalRecuperacionDAO = new RecuperacionDAOMemoria(finalUsuarioDAO);
+                }
+
+                recuperacionController.setUsuarioDAO(finalUsuarioDAO);
+                recuperacionController.setRecuperacionDAO(finalRecuperacionDAO);
+
+                String usernameInput = loginView.getTxtUsername().getText().trim();
+                String passwordInput = new String(loginView.getTxtContrasenia().getPassword()).trim();
+                Usuario actual = finalUsuarioDAO.autenticar(usernameInput, passwordInput);
+
+                if (actual == null) {
+                    loginView.mostrarMensaje(mensajeHandler.get("usuario.error.credenciales"));
+                    return;
+                }
+
+                loginView.dispose();
+
+                UsuarioListaView listaView = new UsuarioListaView(mensajeHandler);
+                UsuarioModView modView = new UsuarioModView(mensajeHandler);
+                UsuarioElimView elimView = new UsuarioElimView(mensajeHandler);
+
+                // CAMBIO: Pasa AMBAS instancias de vista de registro (registroJFrame y registroJInternalFrame)
+                UsuarioController usuarioControllerInstancia = new UsuarioController(
+                        finalUsuarioDAO, loginView, registroJFrame, registroJInternalFrame, // PASA registroJFrame y registroJInternalFrame
+                        listaView, modView, elimView,
+                        principal, recuperacionController, mensajeHandler
+                );
+                usuarioControllerInstancia.setUsuarioActual(actual);
+
+                ProductoAñadirView prodAddView = new ProductoAñadirView(mensajeHandler);
+                ProductoListaView prodListView = new ProductoListaView(mensajeHandler);
+                ProductoModView prodModView = new ProductoModView(mensajeHandler);
+                ProductoElimView prodElimView = new ProductoElimView(finalProductoDAO, mensajeHandler);
+
+                new ProductoController(finalProductoDAO, prodAddView, prodListView, prodModView, prodElimView, mensajeHandler);
+
+                CarritoAñadirView cartAddView = new CarritoAñadirView(mensajeHandler);
+                CarritoListaView cartListView = new CarritoListaView(mensajeHandler);
+                CarritoModView cartModView = new CarritoModView(mensajeHandler);
+                CarritoElimView cartElimView = new CarritoElimView(mensajeHandler);
+                CarritoDetallesView cartDetView = new CarritoDetallesView(mensajeHandler);
+
+                new CarritoController(
+                        finalCarritoDAO, finalProductoDAO, cartAddView, cartListView, cartModView,
+                        cartElimView, cartDetView, actual, mensajeHandler
+                );
+
+                principal.setVisible(true);
+                String plantilla = mensajeHandler.get("info.bienvenida");
+                String saludo = MessageFormat.format(plantilla, actual.getUsername());
+                principal.mostrarMensaje(saludo);
+                if (actual.getRol() == Rol.USUARIO) {
+                    principal.deshabilitarMenusAdministrador();
+                }
+
+                principal.getMenuItemCrearProducto().addActionListener(ev -> mostrarVentana(principal, prodAddView));
+                principal.getMenuItemBuscarProducto().addActionListener(ev -> mostrarVentana(principal, prodListView));
+                principal.getMenuItemActualizarProducto().addActionListener(ev -> mostrarVentana(principal, prodModView));
+                principal.getMenuItemEliminarProducto().addActionListener(ev -> mostrarVentana(principal, prodElimView));
+
+                principal.getMenuItemCrearCarrito().addActionListener(ev -> mostrarVentana(principal, cartAddView));
+                principal.getMenuItemBuscarCarrito().addActionListener(ev -> mostrarVentana(principal, cartListView));
+                principal.getMenuItemModificarCarrito().addActionListener(ev -> mostrarVentana(principal, cartModView));
+                principal.getMenuItemEliminarCarrito().addActionListener(ev -> mostrarVentana(principal, cartElimView));
+                principal.getMenuItemVerDetallesCarrito().addActionListener(ev -> mostrarVentana(principal, cartDetView));
+
+                principal.getMenuItemIdiomaEspanol().addActionListener(ev -> principal.cambiarIdioma("es", "EC"));
+                principal.getMenuItemIdiomaIngles().addActionListener(ev -> principal.cambiarIdioma("en", "US"));
+                principal.getMenuItemIdiomaFrances().addActionListener(ev -> principal.cambiarIdioma("fr", "FR"));
+            });
 
             loginView.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent e) {
-                    Usuario actual = usuarioController.getUsuarioActual();
-                    if (actual == null) System.exit(0);
-
-                    CarritoAñadirView cartAddView = new CarritoAñadirView(mensajeHandler);
-                    CarritoListaView cartListView = new CarritoListaView(mensajeHandler);
-                    CarritoModView cartModView = new CarritoModView(mensajeHandler);
-                    CarritoElimView cartElimView = new CarritoElimView(mensajeHandler);
-                    CarritoDetallesView cartDetView = new CarritoDetallesView(mensajeHandler);
-
-                    new CarritoController(
-                            carritoDAO, productoDAO, cartAddView, cartListView, cartModView,
-                            cartElimView, cartDetView, actual, mensajeHandler
-                    );
-
-                    principal.setVisible(true);
-                    String plantilla = mensajeHandler.get("info.bienvenida");
-                    String saludo = MessageFormat.format(plantilla, actual.getUsername());
-                    principal.mostrarMensaje(saludo);
-                    if (actual.getRol() == Rol.USUARIO) {
-                        principal.deshabilitarMenusAdministrador();
+                    if (!principal.isVisible()) {
+                        System.exit(0);
                     }
-
-                    principal.getMenuItemCrearProducto().addActionListener(ev -> mostrarVentana(principal, prodAddView));
-                    principal.getMenuItemBuscarProducto().addActionListener(ev -> mostrarVentana(principal, prodListView));
-                    principal.getMenuItemActualizarProducto().addActionListener(ev -> mostrarVentana(principal, prodModView));
-                    principal.getMenuItemEliminarProducto().addActionListener(ev -> mostrarVentana(principal, prodElimView));
-
-                    principal.getMenuItemCrearCarrito().addActionListener(ev -> mostrarVentana(principal, cartAddView));
-                    principal.getMenuItemBuscarCarrito().addActionListener(ev -> mostrarVentana(principal, cartListView));
-                    principal.getMenuItemModificarCarrito().addActionListener(ev -> mostrarVentana(principal, cartModView));
-                    principal.getMenuItemEliminarCarrito().addActionListener(ev -> mostrarVentana(principal, cartElimView));
-                    principal.getMenuItemVerDetallesCarrito().addActionListener(ev -> mostrarVentana(principal, cartDetView));
-
-                    principal.getMenuItemIdiomaEspanol().addActionListener(ev -> principal.cambiarIdioma("es", "EC"));
-                    principal.getMenuItemIdiomaIngles().addActionListener(ev -> principal.cambiarIdioma("en", "US"));
-                    principal.getMenuItemIdiomaFrances().addActionListener(ev -> principal.cambiarIdioma("fr", "FR"));
                 }
             });
-
-            // 5. Inicia la aplicación mostrando la ventana de login
-            loginView.setVisible(true);
         });
     }
 
