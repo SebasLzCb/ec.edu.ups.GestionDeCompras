@@ -7,6 +7,8 @@ import ec.edu.ups.vista.Producto.ProductoAñadirView;
 import ec.edu.ups.vista.Producto.ProductoListaView;
 import ec.edu.ups.vista.Producto.ProductoModView;
 import ec.edu.ups.vista.Producto.ProductoElimView;
+import ec.edu.ups.util.ValidacionUtils;
+import ec.edu.ups.excepciones.ValidacionException;
 
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
@@ -26,12 +28,12 @@ public class ProductoController {
                               ProductoModView modView,
                               ProductoElimView elimView,
                               MensajeInternacionalizacionHandler mensajeHandler) {
-        this.dao              = dao;
-        this.añadirView       = añadirView;
-        this.listaView        = listaView;
-        this.modView          = modView;
-        this.elimView         = elimView;
-        this.mensajeHandler   = mensajeHandler;
+        this.dao = dao;
+        this.añadirView = añadirView;
+        this.listaView = listaView;
+        this.modView = modView;
+        this.elimView = elimView;
+        this.mensajeHandler = mensajeHandler;
 
         configurarVistas();
         configurarEventos();
@@ -47,22 +49,18 @@ public class ProductoController {
     }
 
     private void configurarEventos() {
-        // Crear producto
         añadirView.getBtnAceptar().addActionListener(e -> crearProducto());
         añadirView.getBtnLimpiar().addActionListener(e -> añadirView.limpiarCampos());
 
-        // Listar y buscar por nombre
         listaView.getBtnListar().addActionListener(e ->
                 listaView.cargarDatos(dao.listarTodos())
         );
         listaView.getBtnBuscar().addActionListener(e -> buscarPorNombre());
 
-        // Modificar
         modView.getBtnBuscar().addActionListener(e -> recargarMod());
         modView.getBtnActualizar().addActionListener(e -> actualizarProducto());
         modView.getBtnCancelar().addActionListener(e -> modView.limpiarCampos());
 
-        // Eliminar y buscar con filtro
         elimView.getBtnBuscar().addActionListener(e -> buscarEnEliminar());
         elimView.getBtnEliminar().addActionListener(e -> eliminarProducto());
     }
@@ -72,25 +70,28 @@ public class ProductoController {
         String sn = añadirView.getTxtNombre().getText().trim();
         String sp = añadirView.getTxtPrecio().getText().trim();
 
-        if (!sc.matches("\\d+") || sn.isEmpty() || !sp.matches("\\d+(\\.\\d+)?")) {
-            añadirView.mostrarMensaje(
-                    mensajeHandler.get("producto.error.cod_precio_nombre")
-            );
-            return;
-        }
+        try {
+            ValidacionUtils.validarCampoObligatorio(sn, mensajeHandler.get("producto.view.anadir.nombre"));
+            ValidacionUtils.validarEnteroPositivo(sc, mensajeHandler.get("producto.view.anadir.codigo"));
+            ValidacionUtils.validarDecimalPositivo(sp, mensajeHandler.get("producto.view.anadir.precio"));
 
-        Producto p = new Producto(
-                Integer.parseInt(sc),
-                sn,
-                Double.parseDouble(sp)
-        );
-        dao.crear(p);
-        añadirView.mostrarMensaje(
-                mensajeHandler.get("producto.success.creado")
-        );
-        añadirView.limpiarCampos();
-        recargarMod();
-        recargarElim();
+            Producto p = new Producto(
+                    Integer.parseInt(sc),
+                    sn,
+                    Double.parseDouble(sp)
+            );
+            dao.crear(p);
+            añadirView.mostrarMensaje(
+                    mensajeHandler.get("producto.success.creado")
+            );
+            añadirView.limpiarCampos();
+            recargarMod();
+            recargarElim();
+        } catch (ValidacionException e) {
+            añadirView.mostrarMensaje(mensajeHandler.get(e.getMessage()));
+        } catch (Exception e) {
+            añadirView.mostrarMensaje(mensajeHandler.get("error.inesperado") + ": " + e.getMessage());
+        }
     }
 
     private void buscarPorNombre() {
@@ -121,23 +122,26 @@ public class ProductoController {
         String sn = modView.getTblProductos().getValueAt(fila, 1).toString();
         String sp = modView.getTblProductos().getValueAt(fila, 2).toString();
 
-        if (!sc.matches("\\d+") || sn.isEmpty() || !sp.matches("\\d+(\\.\\d+)?")) {
-            modView.mostrarMensaje(
-                    mensajeHandler.get("producto.error.formato_invalido")
-            );
-            return;
-        }
+        try {
+            ValidacionUtils.validarCampoObligatorio(sn, mensajeHandler.get("producto.view.modificar.nombre"));
+            ValidacionUtils.validarEnteroPositivo(sc, mensajeHandler.get("producto.view.modificar.codigo"));
+            ValidacionUtils.validarDecimalPositivo(sp, mensajeHandler.get("producto.view.modificar.precio"));
 
-        dao.actualizar(new Producto(
-                Integer.parseInt(sc),
-                sn,
-                Double.parseDouble(sp)
-        ));
-        modView.mostrarMensaje(
-                mensajeHandler.get("producto.success.actualizado")
-        );
-        recargarMod();
-        recargarElim();
+            dao.actualizar(new Producto(
+                    Integer.parseInt(sc),
+                    sn,
+                    Double.parseDouble(sp)
+            ));
+            modView.mostrarMensaje(
+                    mensajeHandler.get("producto.success.actualizado")
+            );
+            recargarMod();
+            recargarElim();
+        } catch (ValidacionException e) {
+            modView.mostrarMensaje(mensajeHandler.get(e.getMessage()));
+        } catch (Exception e) {
+            modView.mostrarMensaje(mensajeHandler.get("error.inesperado") + ": " + e.getMessage());
+        }
     }
 
     private void recargarElim() {
@@ -151,11 +155,23 @@ public class ProductoController {
     private void buscarEnEliminar() {
         int filtroIndex = elimView.getComboFiltro().getSelectedIndex();
         String txt = elimView.getTxtBusqueda().getText().trim().toLowerCase();
-        List<Producto> filtrados = dao.listarTodos().stream().filter(p ->
-                filtroIndex == 1
-                        ? String.valueOf(p.getCodigo()).contains(txt)
-                        : p.getNombre().toLowerCase().contains(txt)
-        ).toList();
+        List<Producto> filtrados;
+        try {
+            if (filtroIndex == 1) { // Búsqueda por código
+                ValidacionUtils.validarEnteroPositivo(txt, mensajeHandler.get("producto.view.eliminar.codigo"));
+                filtrados = dao.listarTodos().stream().filter(p ->
+                        String.valueOf(p.getCodigo()).contains(txt)
+                ).toList();
+            } else { // Búsqueda por nombre (filtroIndex == 0)
+                ValidacionUtils.validarCampoObligatorio(txt, mensajeHandler.get("producto.view.eliminar.nombre"));
+                filtrados = dao.listarTodos().stream().filter(p ->
+                        p.getNombre().toLowerCase().contains(txt)
+                ).toList();
+            }
+        } catch (ValidacionException e) {
+            elimView.mostrarMensaje(mensajeHandler.get(e.getMessage()));
+            return;
+        }
 
         DefaultTableModel m = elimView.getModelResultado();
         m.setRowCount(0);

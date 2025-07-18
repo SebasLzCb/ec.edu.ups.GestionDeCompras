@@ -5,13 +5,15 @@ import ec.edu.ups.util.MensajeInternacionalizacionHandler;
 import ec.edu.ups.vista.Principal;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.List;
 
 public class LoginView extends JFrame {
     private final MensajeInternacionalizacionHandler mensajeHandler;
     private final RecuperacionController recuperacionController;
-    private RegistroView registroFrame; // Este es el JFrame de registro
+    private RegistroView registroFrame;
     private Principal principal;
 
     private JPanel panelPrincipal;
@@ -23,8 +25,14 @@ public class LoginView extends JFrame {
     private JButton btnRegistrarse;
     private JButton btnOlvCont;
     private JComboBox<String> cbxIdioma;
+
     private JComboBox<String> cbxStorageType;
     private JLabel lblStorageType;
+
+    private JLabel lblRuta;
+    private JTextField textRuta;
+    private JButton btnSeleccionRuta;
+
 
     public LoginView(RecuperacionController recuperacionController,
                      MensajeInternacionalizacionHandler mensajeHandler) {
@@ -33,12 +41,11 @@ public class LoginView extends JFrame {
         this.recuperacionController = recuperacionController;
 
         setContentPane(panelPrincipal);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // CAMBIO AQUÍ: DISPOSE_ON_CLOSE
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         pack();
         setLocationRelativeTo(null);
         setResizable(false);
 
-        // Configuración del JComboBox de idioma
         cbxIdioma.setModel(new DefaultComboBoxModel<>(new String[]{
                 "Español", "English", "Français"
         }));
@@ -66,11 +73,52 @@ public class LoginView extends JFrame {
             }
         });
 
-        // Inicialización y configuración del JComboBox de tipo de almacenamiento
         cbxStorageType.setModel(new DefaultComboBoxModel<>(new String[]{
                 mensajeHandler.get("login.storage.memory"),
-                mensajeHandler.get("login.storage.file_system")
+                mensajeHandler.get("login.storage.file_system"),
+                mensajeHandler.get("login.storage.binary")
         }));
+
+        cbxStorageType.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String tipoSeleccionadoKey = (String) cbxStorageType.getSelectedItem();
+                boolean esArchivo = tipoSeleccionadoKey != null &&
+                        (tipoSeleccionadoKey.equals(mensajeHandler.get("login.storage.file_system")) ||
+                                tipoSeleccionadoKey.equals(mensajeHandler.get("login.storage.binary")));
+
+                lblRuta.setVisible(esArchivo);
+                textRuta.setVisible(esArchivo);
+                btnSeleccionRuta.setVisible(esArchivo);
+
+                if (esArchivo && textRuta.getText().isEmpty()) {
+                    textRuta.setText("data" + File.separator);
+                } else if (!esArchivo) {
+                    textRuta.setText("");
+                }
+            }
+        });
+        cbxStorageType.setSelectedIndex(0);
+        if (cbxStorageType.getActionListeners().length > 0) {
+            cbxStorageType.getActionListeners()[0].actionPerformed(
+                    new ActionEvent(cbxStorageType, ActionEvent.ACTION_PERFORMED, null)
+            );
+        }
+
+        btnSeleccionRuta.addActionListener(new ActionListener() { // Usando su botón
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int opcion = fileChooser.showOpenDialog(LoginView.this);
+
+                if (opcion == JFileChooser.APPROVE_OPTION) {
+                    File directorioSeleccionado = fileChooser.getSelectedFile();
+                    textRuta.setText(directorioSeleccionado.getAbsolutePath() + File.separator); // Usando su campo de texto
+                }
+            }
+        });
+
 
         btnOlvCont.addActionListener(e -> {
             String user = txtUsername.getText().trim();
@@ -88,7 +136,7 @@ public class LoginView extends JFrame {
                 registroFrame.limpiarCampos();
                 registroFrame.setVisible(true);
             } else {
-                mostrarMensaje("Error: La ventana de registro (JFrame) no fue inicializada.");
+                mostrarMensaje(mensajeHandler.get("error.registro_frame_no_inicializado"));
             }
         });
 
@@ -117,41 +165,79 @@ public class LoginView extends JFrame {
 
     public void actualizarIdioma() {
         setTitle(mensajeHandler.get("login.titulo"));
-        lblUsuario   .setText(mensajeHandler.get("login.usuario") + ":");
+        lblUsuario.setText(mensajeHandler.get("login.usuario") + ":");
         lblContraseña.setText(mensajeHandler.get("login.contrasenia") + ":");
         btnIniciarSesion.setText(mensajeHandler.get("login.iniciar"));
-        btnRegistrarse  .setText(mensajeHandler.get("login.registrarse"));
-        btnOlvCont      .setText(mensajeHandler.get("login.olvidarContrasenia"));
+        btnRegistrarse.setText(mensajeHandler.get("login.registrarse"));
+        btnOlvCont.setText(mensajeHandler.get("login.olvidarContrasenia"));
 
         lblStorageType.setText(mensajeHandler.get("login.storage.label") + ":");
+        lblRuta.setText(mensajeHandler.get("login.ruta_archivos") + ":"); // Usando su label
+        btnSeleccionRuta.setText(mensajeHandler.get("login.boton.seleccionar_ruta")); // Usando su botón
+
+
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
         model.addElement(mensajeHandler.get("login.storage.memory"));
         model.addElement(mensajeHandler.get("login.storage.file_system"));
+        model.addElement(mensajeHandler.get("login.storage.binary"));
+
+        String seleccionActualKey = (String) cbxStorageType.getSelectedItem();
         cbxStorageType.setModel(model);
+
+        if (seleccionActualKey != null && model.getIndexOf(seleccionActualKey) != -1) {
+            cbxStorageType.setSelectedItem(seleccionActualKey);
+        } else {
+            cbxStorageType.setSelectedIndex(0);
+        }
+
+        if (cbxStorageType.getActionListeners().length > 0) {
+            cbxStorageType.getActionListeners()[0].actionPerformed(
+                    new ActionEvent(cbxStorageType, ActionEvent.ACTION_PERFORMED, null)
+            );
+        }
     }
 
-    public JTextField getTxtUsername()        { return txtUsername; }
-    public JPasswordField getTxtContrasenia() { return txtContrasenia; }
-    public JButton getBtnIniciarSesion()      { return btnIniciarSesion; }
-    public JButton getBtnRegistrar()          { return btnRegistrarse; }
-    public JButton getBtnOlvCont()            { return btnOlvCont; }
+    public JTextField getTxtUsername() {
+        return txtUsername;
+    }
 
-    public String getSelectedStorageType() {
+    public JPasswordField getTxtContrasenia() {
+        return txtContrasenia;
+    }
+
+    public JButton getBtnIniciarSesion() {
+        return btnIniciarSesion;
+    }
+
+    public JButton getBtnRegistrar() {
+        return btnRegistrarse;
+    }
+
+    public JButton getBtnOlvCont() {
+        return btnOlvCont;
+    }
+
+    public String getSelectedStorageTypeKey() {
         return (String) cbxStorageType.getSelectedItem();
     }
 
-    public void addLoginActionListener(ActionListener listener) {
-        btnIniciarSesion.addActionListener(listener);
+    public String getRutaArchivos() {
+        String ruta = textRuta.getText().trim();
+        System.out.println("DEBUG (LoginView): Ruta de archivos obtenida de la UI: " + ruta);
+        return ruta;
     }
 
     public void mostrarMensaje(String msg) {
         JOptionPane.showMessageDialog(this, msg);
     }
+
     public void limpiarCampos() {
         txtUsername.setText("");
         txtContrasenia.setText("");
-        if (cbxStorageType.getItemCount() > 0) {
-            cbxStorageType.setSelectedIndex(0);
-        }
+        cbxStorageType.setSelectedIndex(0);
+        textRuta.setText("data" + File.separator); // Usando su campo de texto
+        lblRuta.setVisible(false); // Ocultar label
+        textRuta.setVisible(false); // Ocultar campo de texto
+        btnSeleccionRuta.setVisible(false); // Ocultar botón
     }
 }

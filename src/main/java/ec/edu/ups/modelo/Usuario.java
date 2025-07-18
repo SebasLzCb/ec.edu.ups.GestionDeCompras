@@ -1,8 +1,9 @@
 package ec.edu.ups.modelo;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 
-public class Usuario {
+public class Usuario implements Serializable {
     private String username;
     private String contrasenia;
     private Rol rol;

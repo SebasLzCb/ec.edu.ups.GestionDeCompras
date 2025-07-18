@@ -1,6 +1,8 @@
 package ec.edu.ups.modelo;
 
-public class Respuesta {
+import java.io.Serializable;
+
+public class Respuesta  implements Serializable {
     private Usuario usuario;
     private Pregunta pregunta;
     private String respuesta;

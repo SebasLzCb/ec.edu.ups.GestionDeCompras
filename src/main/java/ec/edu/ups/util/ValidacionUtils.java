@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class ValidacionUtils {
 
-    public static void validarCampoObligatorio(String campo, String nombreCampoKey) throws ValidacionException {
+    public static void validarCampoObligatorio(String campo, String nombreCampoUI) throws ValidacionException {
         if (campo == null || campo.trim().isEmpty()) {
             throw new ValidacionException("validacion.error.campo_obligatorio");
         }
@@ -32,40 +32,74 @@ public class ValidacionUtils {
     }
 
     public static void validarCedulaEcuatoriana(String cedula) throws ValidacionException {
-        if (cedula == null || cedula.length() != 10 || !cedula.matches("\\d+")) {
+        if (cedula == null || cedula.trim().length() != 10) {
             throw new ValidacionException("validacion.error.cedula_formato");
         }
 
-        try {
-            int sum = 0;
+        if (!cedula.matches("\\d+")) {
+            throw new ValidacionException("validacion.error.cedula_formato");
+        }
+
+        int[] digitos = new int[10];
+        for (int i = 0; i < 10; i++) {
+            digitos[i] = Character.getNumericValue(cedula.charAt(i));
+        }
+
+        int provincia = digitos[0] * 10 + digitos[1];
+        if (provincia < 1 || provincia > 24) {
+            throw new ValidacionException("validacion.error.cedula_verificador");
+        }
+
+        int tercerDigito = digitos[2];
+        if (tercerDigito >= 6 && tercerDigito != 9) {
+            throw new ValidacionException("validacion.error.cedula_verificador");
+        }
+
+        if (tercerDigito < 6) {
             int[] coeficientes = {2, 1, 2, 1, 2, 1, 2, 1, 2};
-
+            int suma = 0;
             for (int i = 0; i < 9; i++) {
-                int digit = Integer.parseInt(cedula.substring(i, i + 1));
-                int temp = digit * coeficientes[i];
-                if (temp >= 10) {
-                    temp -= 9;
+                int producto = digitos[i] * coeficientes[i];
+                if (producto >= 10) {
+                    producto -= 9;
                 }
-                sum += temp;
+                suma += producto;
             }
 
-            int lastDigit = Integer.parseInt(cedula.substring(9, 10));
-            int calculatedCheckDigit = sum % 10;
-            if (calculatedCheckDigit != 0) {
-                calculatedCheckDigit = 10 - calculatedCheckDigit;
-            }
+            int ultimoDigito = digitos[9];
+            int digitoVerificador = (suma % 10 == 0) ? 0 : (10 - (suma % 10));
 
-            if (calculatedCheckDigit != lastDigit) {
+            if (ultimoDigito != digitoVerificador) {
                 throw new ValidacionException("validacion.error.cedula_verificador");
             }
-        } catch (NumberFormatException e) {
-            throw new ValidacionException("validacion.error.cedula_formato");
+        } else if (tercerDigito == 6 || tercerDigito == 9) {
+            throw new ValidacionException("validacion.error.cedula_solo_natural");
         }
     }
 
-    public static void validarNumeroPositivo(double numero, String nombreCampoKey) throws ValidacionException {
-        if (numero <= 0) {
-            throw new ValidacionException("validacion.error.numero_positivo");
+    // MODIFICADO: Ahora recibe String para parsear el input de la UI
+    public static void validarEnteroPositivo(String valor, String nombreCampoUI) throws ValidacionException {
+        validarCampoObligatorio(valor, nombreCampoUI); // Valida que no esté vacío
+        try {
+            int numero = Integer.parseInt(valor);
+            if (numero <= 0) {
+                throw new ValidacionException("validacion.error.numero_positivo");
+            }
+        } catch (NumberFormatException e) {
+            throw new ValidacionException("validacion.error.entero_invalido"); // Nueva clave para error de formato
+        }
+    }
+
+    // NUEVO MÉTODO: Validar Decimal Positivo
+    public static void validarDecimalPositivo(String valor, String nombreCampoUI) throws ValidacionException {
+        validarCampoObligatorio(valor, nombreCampoUI); // Valida que no esté vacío
+        try {
+            double numero = Double.parseDouble(valor);
+            if (numero <= 0) {
+                throw new ValidacionException("validacion.error.numero_positivo");
+            }
+        } catch (NumberFormatException e) {
+            throw new ValidacionException("validacion.error.decimal_invalido"); // Nueva clave para error de formato
         }
     }
 }

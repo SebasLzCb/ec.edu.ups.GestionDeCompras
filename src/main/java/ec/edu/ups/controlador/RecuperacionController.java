@@ -9,6 +9,7 @@ import ec.edu.ups.util.MensajeInternacionalizacionHandler;
 import ec.edu.ups.vista.InicioDeSesion.CambiarContraseñaView;
 import ec.edu.ups.vista.InicioDeSesion.LoginView;
 import ec.edu.ups.vista.InicioDeSesion.RecuperarContraseñaView;
+import ec.edu.ups.dao.DAOManager;
 
 import java.util.List;
 import java.util.Random;
@@ -19,28 +20,31 @@ public class RecuperacionController {
     private RecuperacionDAO recuperacionDAO;
     private UsuarioDAO      usuarioDAO;
     private final MensajeInternacionalizacionHandler mensajeHandler;
+    private final DAOManager daoManager;
 
-    private RecuperarContraseñaView recuperarView;
     private LoginView loginView;
+    private RecuperarContraseñaView recuperarView;
 
     public RecuperacionController(RecuperacionDAO recuperacionDAO,
                                   UsuarioDAO usuarioDAO,
-                                  MensajeInternacionalizacionHandler mensajeHandler) {
+                                  MensajeInternacionalizacionHandler mensajeHandler,
+                                  DAOManager daoManager) {
         this.recuperacionDAO = recuperacionDAO;
         this.usuarioDAO      = usuarioDAO;
         this.mensajeHandler  = mensajeHandler;
+        this.daoManager = daoManager;
     }
 
-    public void setUsuarioDAO(UsuarioDAO usuarioDAO) {
-        this.usuarioDAO = usuarioDAO;
+    public RecuperacionDAO getRecuperacionDAO() {
+        return recuperacionDAO;
     }
 
     public void setRecuperacionDAO(RecuperacionDAO recuperacionDAO) {
         this.recuperacionDAO = recuperacionDAO;
     }
 
-    public RecuperacionDAO getRecuperacionDAO() {
-        return this.recuperacionDAO;
+    public void setUsuarioDAO(UsuarioDAO usuarioDAO) {
+        this.usuarioDAO = usuarioDAO;
     }
 
     public void setLoginView(LoginView loginView) {
@@ -51,20 +55,20 @@ public class RecuperacionController {
         this.recuperarView = recuperarView;
 
         recuperarView.getBtnSiguiente().addActionListener(e -> {
-            String usr       = recuperarView.getTxtUsuario().getText().trim();
-            String pregunta  = recuperarView.getPreguntas()[0];
+            String usr = recuperarView.getTxtUsuario().getText().trim();
+            String pregunta = recuperarView.getPreguntas()[0];
             String respuesta = recuperarView.getRespuestas()[0];
 
-            if (recuperacionDAO == null || usuarioDAO == null) {
-                recuperarView.mostrarMensaje(mensajeHandler.get("error.recuperacion.daos_no_inicializados"));
-                return;
-            }
+            // Usar las DAOs actualizadas del DAOManager
+            UsuarioDAO currentUsuarioDAO = daoManager.getUsuarioDAO();
+            RecuperacionDAO currentRecuperacionDAO = daoManager.getRecuperacionDAO();
+            System.out.println("DEBUG (RecuperacionController - Siguiente): Validando respuesta para " + usr + " con DAO: " + currentRecuperacionDAO.getClass().getSimpleName());
 
-            if (recuperacionDAO.validar(usr, pregunta, respuesta)) {
-                Usuario u = usuarioDAO.buscarPorUsername(usr);
+
+            if (currentRecuperacionDAO.validar(usr, pregunta, respuesta)) {
+                Usuario u = currentUsuarioDAO.buscarPorUsername(usr);
                 if (u != null) {
-                    // Asegurarse de que el usuarioDAO para la vista CambiarContraseñaView no sea nulo
-                    CambiarContraseñaView cv = new CambiarContraseñaView(u, usuarioDAO, mensajeHandler);
+                    CambiarContraseñaView cv = new CambiarContraseñaView(u, currentUsuarioDAO, mensajeHandler);
                     cv.actualizarIdioma();
                     cv.setVisible(true);
                     recuperarView.dispose();
@@ -82,22 +86,14 @@ public class RecuperacionController {
     }
 
     public List<String> obtenerPreguntasLocalizadas() {
-        // Asegurarse de que recuperacionDAO no es nulo antes de usarlo
-        if (recuperacionDAO == null) {
-            // Esto no debería suceder con la inicialización temporal en Main
-            System.err.println("ADVERTENCIA: recuperacionDAO es nulo en obtenerPreguntasLocalizadas al inicio.");
-            return new java.util.ArrayList<>();
-        }
+        System.out.println("DEBUG (RecuperacionController - obtenerPreguntasLocalizadas): Obteniendo preguntas del banco con DAO: " + recuperacionDAO.getClass().getSimpleName());
         return recuperacionDAO.getBancoPreguntas().stream()
                 .map(p -> mensajeHandler.get("recuperacion.pregunta." + p.getId()))
                 .collect(Collectors.toList());
     }
 
     public void registrarPreguntas(Usuario usuario, List<Respuesta> respuestasList) {
-        if (recuperacionDAO == null) {
-            System.err.println("ADVERTENCIA: recuperacionDAO es nulo en registrarPreguntas.");
-            return;
-        }
+        System.out.println("DEBUG (RecuperacionController - registrarPreguntas): Guardando respuestas para " + usuario.getUsername() + " con DAO: " + recuperacionDAO.getClass().getSimpleName());
         String[] preg = new String[respuestasList.size()];
         String[] resp = new String[respuestasList.size()];
         for (int i = 0; i < respuestasList.size(); i++) {
@@ -108,16 +104,12 @@ public class RecuperacionController {
     }
 
     public void mostrarRecuperar(String username) {
-        if (recuperacionDAO == null || usuarioDAO == null || loginView == null || recuperarView == null) {
-            if (loginView != null) {
-                loginView.mostrarMensaje(mensajeHandler.get("error.recuperacion.inicializacion_pendiente"));
-            } else {
-                System.err.println("ADVERTENCIA: No se pudo mostrar la recuperación. LoginView o DAOs no inicializados.");
-            }
-            return;
-        }
+        System.out.println("DEBUG (RecuperacionController - mostrarRecuperar): Intentando mostrar recuperación para " + username);
+        RecuperacionDAO currentRecuperacionDAO = daoManager.getRecuperacionDAO();
+        System.out.println("DEBUG (RecuperacionController - mostrarRecuperar): Usando DAO: " + currentRecuperacionDAO.getClass().getSimpleName());
 
-        List<String> hechas = recuperacionDAO.getPreguntasUsuario(username);
+        List<String> hechas = currentRecuperacionDAO.getPreguntasUsuario(username);
+        System.out.println("DEBUG (RecuperacionController - mostrarRecuperar): Preguntas obtenidas para " + username + ": " + hechas);
         if (hechas.isEmpty()) {
             loginView.mostrarMensaje(
                     mensajeHandler.get("error.recuperacion.noPreguntas")
@@ -125,7 +117,7 @@ public class RecuperacionController {
             return;
         }
 
-        List<Pregunta> bancoPreguntas = recuperacionDAO.getBancoPreguntas();
+        List<Pregunta> bancoPreguntas = currentRecuperacionDAO.getBancoPreguntas();
         List<Pregunta> preguntasDelUsuario = bancoPreguntas.stream()
                 .filter(p -> hechas.contains(p.getPregunta()))
                 .collect(Collectors.toList());
@@ -139,6 +131,7 @@ public class RecuperacionController {
 
         Pregunta preguntaElegida = preguntasDelUsuario.get(new Random().nextInt(preguntasDelUsuario.size()));
         String preguntaLocalizada = mensajeHandler.get("recuperacion.pregunta." + preguntaElegida.getId());
+        System.out.println("DEBUG (RecuperacionController - mostrarRecuperar): Pregunta elegida para " + username + ": " + preguntaLocalizada);
 
         recuperarView.getTxtUsuario().setText(username);
         recuperarView.setPreguntas(List.of(preguntaLocalizada));

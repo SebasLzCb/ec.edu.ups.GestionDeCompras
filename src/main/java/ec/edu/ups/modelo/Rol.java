@@ -1,6 +1,6 @@
 package ec.edu.ups.modelo;
 
-public enum Rol {
+public enum Rol  {
     ADMINISTRADOR,
     USUARIO
 }

@@ -1,6 +1,8 @@
 package ec.edu.ups.modelo;
 
-public class ItemCarrito {
+import java.io.Serializable;
+
+public class ItemCarrito implements Serializable {
     private Producto producto;
     private int cantidad;
 

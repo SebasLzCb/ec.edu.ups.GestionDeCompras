@@ -3,6 +3,8 @@ package ec.edu.ups.vista.InicioDeSesion;
 import ec.edu.ups.dao.UsuarioDAO;
 import ec.edu.ups.modelo.Usuario;
 import ec.edu.ups.util.MensajeInternacionalizacionHandler;
+import ec.edu.ups.util.ValidacionUtils;
+import ec.edu.ups.excepciones.ValidacionException;
 
 import javax.swing.*;
 
@@ -21,8 +23,8 @@ public class CambiarContraseñaView extends JFrame {
                                  UsuarioDAO usuarioDAO,
                                  MensajeInternacionalizacionHandler mensajeHandler) {
         super(mensajeHandler.get("contraseña.cambiar.titulo"));
-        this.usuario        = usuario;
-        this.usuarioDAO     = usuarioDAO;
+        this.usuario = usuario;
+        this.usuarioDAO = usuarioDAO;
         this.mensajeHandler = mensajeHandler;
 
         setContentPane(panelPrincipal);
@@ -39,32 +41,37 @@ public class CambiarContraseñaView extends JFrame {
     }
 
     private void onConfirmar() {
-        String nueva   = new String(txtNuevaContrasena.getPassword()).trim();
+        String nueva = new String(txtNuevaContrasena.getPassword()).trim();
         String repetir = new String(txtRepetirContrasena.getPassword()).trim();
 
-        if (nueva.isEmpty() || repetir.isEmpty()) {
-            mostrarMensaje(mensajeHandler.get("error.campos.obligatorios"));
-            return;
-        }
-        if (!nueva.equals(repetir)) {
-            mostrarMensaje(mensajeHandler.get("error.contrasenia.noCoinciden"));
-            return;
-        }
-        // 5) Actualiza el modelo y persiste
-        usuario.setContrasenia(nueva);
-        usuarioDAO.actualizar(usuario);
+        try {
+            ValidacionUtils.validarCampoObligatorio(nueva, mensajeHandler.get("contraseña.cambiar.nueva"));
+            ValidacionUtils.validarCampoObligatorio(repetir, mensajeHandler.get("contraseña.cambiar.repetir"));
+            ValidacionUtils.validarContrasenia(nueva); // Validar complejidad de la nueva contraseña
 
-        mostrarMensaje(mensajeHandler.get("usuario.cambiarContrasenia.ok"));
-        dispose();
+            if (!nueva.equals(repetir)) {
+                throw new ValidacionException("error.contrasenia.noCoinciden");
+            }
+
+            usuario.setContrasenia(nueva);
+            usuarioDAO.actualizar(usuario);
+
+            mostrarMensaje(mensajeHandler.get("usuario.cambiarContrasenia.ok"));
+            dispose();
+        } catch (ValidacionException e) {
+            mostrarMensaje(mensajeHandler.get(e.getMessage()));
+        } catch (Exception e) {
+            mostrarMensaje(mensajeHandler.get("error.inesperado") + ": " + e.getMessage());
+        }
     }
 
     public void actualizarIdioma() {
         setTitle(mensajeHandler.get("contraseña.cambiar.titulo"));
-        lblNombre    .setText(mensajeHandler.get("contraseña.cambiar.usuario")  + ":");
-        lblNuevaCont .setText(mensajeHandler.get("contraseña.cambiar.nueva")    + ":");
-        lblRepCont   .setText(mensajeHandler.get("contraseña.cambiar.repetir")  + ":");
-        btnConfirmar .setText(mensajeHandler.get("contraseña.cambiar.confirmar"));
-        btnCancelar  .setText(mensajeHandler.get("contraseña.cambiar.cancelar"));
+        lblNombre.setText(mensajeHandler.get("contraseña.cambiar.usuario") + ":");
+        lblNuevaCont.setText(mensajeHandler.get("contraseña.cambiar.nueva") + ":");
+        lblRepCont.setText(mensajeHandler.get("contraseña.cambiar.repetir") + ":");
+        btnConfirmar.setText(mensajeHandler.get("contraseña.cambiar.confirmar"));
+        btnCancelar.setText(mensajeHandler.get("contraseña.cambiar.cancelar"));
     }
 
     public void mostrarMensaje(String mensaje) {

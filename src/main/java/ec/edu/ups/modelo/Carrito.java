@@ -1,11 +1,12 @@
 package ec.edu.ups.modelo;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
-public class Carrito {
+public class Carrito implements Serializable {
 
     private final double IVA = 0.12;
     private static int contador = 1;
